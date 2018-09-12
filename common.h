@@ -2,6 +2,8 @@
 * Common.h file is used from other source files
 * bit manipulation
 ------------------------------------------------------*/
+#pragma once 
+
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
 

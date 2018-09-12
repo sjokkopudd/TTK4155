@@ -9,13 +9,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <avr/io.h>
-#include "sram.h"
+#include "sram_driver.h"
+#include "adc_driver.h"
+#include "joystick_driver.h"
 
 
+static void ext_mem_init(void){
+	//enable external memory
+	set_bit(MCUCR, SRE);
+	set_bit(SFIOR, XMM2);
+	clear_bit(SFIOR, XMM1);
+	clear_bit(SFIOR, XMM0);
+}
 
 
-
-int main(){
+static char* enumStrings[] = {"left", "right", "up", "down", "neutral"}; 
+                               
+void ex1(){
 	/* Ex 1 - Test with writing on LED*/
 	/*DDRC |= (1 << PC0);
 
@@ -26,14 +36,8 @@ int main(){
 		_delay_ms(1000);
 	}*/
 
-	
-	/* Ex 1 - Uart and Printf */
-	
-	unsigned long clock_speed = F_CPU;
-	
-
-	uart_init(clock_speed);
-
+	//-------------------------------------
+	//Uart and Printf 
 	/*while(1){
 		uart_transmit('H');
 		uart_transmit('\r');
@@ -44,42 +48,67 @@ int main(){
 		printf("Hello World");
 		printf("\r\n");
 	}*/
+	//------------------------------------
 
+
+}
+
+void ex2(){
+/* Ex 2 - External Ram */
+	
+	//configure pins
 	//enable external memory
-	set_bit(MCUCR, SRE);
-
-
-	char data = 'c';
-	volatile char *ext_ram = (char *) 0x1800;
-	while(1){
-			*ext_ram = data;
-
-	}
+	ext_mem_init();
 	
-	//ext_ram[0x7ff] = data;
-
-	/* Ex 2 - External Ram */
-	//char data = 'c';
-	//volatile char* ext_ram = 0x1000;
-	
-
+	//run the test program
 	//sram_test();
 
 
-	/*while(1) {
-		ext_ram[0x000] = data;
-		//printf("OLED command\n");
-		_delay_ms(3000);
-		ext_ram[0x300] = data;
-		//printf("OLED data\n");
-		_delay_ms(3000);
-		ext_ram[0x400] = data;
-		//printf("ADC\n");
-		_delay_ms(3000);
-		ext_ram[0x800] = data;
-		//printf("SRAM\n");
-		_delay_ms(3000);
-	}*/
+	//test sram, adc and oled with the gal
+	volatile char *ext_ram = (char *) 0x1000;
+	uint8_t data = 55;
+
+	joy_direction_t dir;
+	joy_analog_pos analog_pos;
+
+	while(1) {
+		//write to OLED
+		//ext_mem_write(0x300, data);
+
+		//ext_ram[0x300] = data;
+		//_delay_ms(3000);
+
+		//ext_ram[0x400] = data;
+		//write to ADC
+		//sram_write(0x400, data);
+		//_delay_ms(3000);
+		
+		//uint16_t addr = 0x500;
+		//ext_ram[0x800]=d ata;
+		//sram_write(addr, data);
+		//ext_ram[0x800] = data;
+		//write to SRAM
+		//ext_mem_write(0x800,data);
+
+		//_delay_ms(3000);
+		uint8_t dir_x = adc_read_channel(JOYCON_X);
+		uint8_t dir_y = adc_read_channel(JOYCON_Y);
+		
+		
+		dir = joystick_get_direction(dir_x, dir_y);
+		analog_pos = joystick_get_analog_pos(dir_x, dir_y);
+		printf("dir = %s \r\nperc x = %d\\%, perc y = %d\\%\r\n",enumStrings[dir], analog_pos.x, analog_pos.y); 
+	}
+}
+
+
+int main(){
+	
+	unsigned long clock_speed = F_CPU;
+
+	uart_init(clock_speed);
+
+	ex2();
 
 
 
