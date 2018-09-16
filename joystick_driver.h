@@ -17,5 +17,7 @@ typedef enum{
 	NEUTRAL = 4
 } joy_direction_t;
 
+void joystick_calibrate(void);
+
 joy_direction_t joystick_get_direction(uint8_t x, uint8_t y);
 joy_analog_pos joystick_get_analog_pos(uint8_t x, uint8_t y);
