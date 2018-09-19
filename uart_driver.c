@@ -6,8 +6,7 @@
 
 #include "uart_driver.h"
 #include <avr/io.h>
-#include <stdlib.h>
-#include <stdio.h>
+
 #include "common.h"
 
 
@@ -35,17 +34,21 @@ void uart_init(unsigned long clk){
 
 }
 
-void uart_transmit(unsigned char data){
+//.. comment needed
+int uart_transmit(char data, FILE * _not_used){
+	(void) _not_used;
+
 	/* Wait for empty transmit buffer*/
-	loop_until_bit_is_set(UCSR0A,UDRE0 );
+	wait_until_bit_is_set(UCSR0A,UDRE0 );
 
 	/* Put data into buffer, sends the data*/
 	UDR0 = data;
 }
 
-unsigned char uart_receive(void){
+int uart_receive(FILE * _not_used){
+	(void) _not_used;
 	/*Wait for data to be received*/
-	loop_until_bit_is_clear(UCSR0A,RXC0 );
+	wait_until_bit_is_clear(UCSR0A,RXC0 );
 
 	/*Get and return received data from buffer*/
 	return UDR0;

@@ -26,6 +26,7 @@ static void ext_mem_init(void){
 static char* enumStrings[] = {"left", "right", "up", "down", "neutral"}; 
                                
 void ex1(){
+	uint8_t data =10;
 	/* Ex 1 - Test with writing on LED*/
 	/*DDRC |= (1 << PC0);
 
@@ -37,17 +38,20 @@ void ex1(){
 	}*/
 
 	//-------------------------------------
+
+	FILE* file = NULL;
 	//Uart and Printf 
-	/*while(1){
-		uart_transmit('H');
-		uart_transmit('\r');
-		uart_transmit('\n');
+	while(1){
+		/*uart_transmit('H', file);
+		uart_transmit('\r', file);
+		uart_transmit('\n', file);*/
 		
 		_delay_ms(100);
 		//unsigned char data = UART_Receive();
-		printf("Hello World");
+		printf("Hello World: %d\n\r", data);
+		
 		printf("\r\n");
-	}*/
+	}
 	//------------------------------------
 
 
@@ -68,9 +72,12 @@ void ex2(){
 	volatile char *ext_ram = (char *) 0x1000;
 	uint8_t data = 55;
 
+	joystick_init();
 	joy_direction_t dir;
 	joy_analog_pos analog_pos;
 
+	volatile uint8_t adc_x = 0;
+	volatile uint8_t adc_y = 0;
 	while(1) {
 		//write to OLED
 		//ext_mem_write(0x300, data);
@@ -91,15 +98,40 @@ void ex2(){
 		//ext_mem_write(0x800,data);
 
 		//_delay_ms(3000);
-		uint8_t dir_x = adc_read_channel(JOYCON_X);
-		uint8_t dir_y = adc_read_channel(JOYCON_Y);
+
+		adc_channel_t CHANNEL;
+		CHANNEL = JOYSTICK_X;
+		
+		adc_x = adc_read_channel(CHANNEL);
+		_delay_ms(100);
+
+		CHANNEL = JOYSTICK_Y;
+		
+		adc_y = adc_read_channel(CHANNEL);
+
+		printf("dir_x: %d, dir_y: %d\r\n", adc_x, adc_y );
 		
 		
-		dir = joystick_get_direction(dir_x, dir_y);
-		analog_pos = joystick_get_analog_pos(dir_x, dir_y);
-		printf("dir = %s \r\nperc x = %d\\%, perc y = %d\\%\r\n",enumStrings[dir], analog_pos.x, analog_pos.y); 
+		dir = joystick_get_direction(adc_x, adc_y);
+		analog_pos = joystick_get_analog_pos(adc_x, adc_y);
+		printf("dir = %s \r\nperc x = %d%%, perc y = %d%%\r\n",enumStrings[dir], analog_pos.x, analog_pos.y); 
+		
+
+		uint8_t slider_left = get_slider_pos_left();
+		uint8_t slider_right = get_slider_pos_right();
+
+		uint8_t button_left = get_button(BTN_LEFT);
+		uint8_t button_right = get_button(BTN_RIGHT);
+
+		printf("slider left: %d, slider right: %d\r\n" ,slider_left , slider_right);
+		printf("left button: %d, right button: %d\r\n\r\n\r\n", button_left, button_right);
+		
+		_delay_ms(2000);
+		
+
 	}
 }
+
 
 
 int main(){
@@ -107,6 +139,9 @@ int main(){
 	unsigned long clock_speed = F_CPU;
 
 	uart_init(clock_speed);
+	//ex1();
+	//joystick_calibrate();
+	adc_init();
 
 	ex2();
 
