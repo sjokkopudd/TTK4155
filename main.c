@@ -12,6 +12,7 @@
 #include "sram_driver.h"
 #include "adc_driver.h"
 #include "joystick_driver.h"
+#include "oled_driver.h"
 
 
 static void ext_mem_init(void){
@@ -132,18 +133,36 @@ void ex2(){
 	}
 }
 
+void ex4(){
 
+	ext_mem_init();
+
+	oled_init();
+
+
+
+	while(1){
+		oled_write_data('c');
+		
+	}
+
+	
+}
 
 int main(){
 	
 	unsigned long clock_speed = F_CPU;
 
 	uart_init(clock_speed);
+
+	
+
 	//ex1();
 	//joystick_calibrate();
-	adc_init();
+	//adc_init();
 
-	ex2();
+	//ex2();
+	ex4();
 
 
 

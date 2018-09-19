@@ -11,7 +11,7 @@ int sram_write(uint16_t address, char data){
 		return EXIT_FAILURE;
 	}
 
-	volatile char* ext_ram = (char*) SRAM_START_ADDRESS;
+	volatile char *ext_ram = (char*) SRAM_START_ADDRESS;
 	ext_ram[address] = data;
 
 	return EXIT_SUCCESS;
@@ -24,7 +24,7 @@ char sram_read(uint16_t address){
 		return EXIT_FAILURE;
 	}
 
-	volatile char* ext_ram = (char*) SRAM_START_ADDRESS;
+	volatile char *ext_ram = (char*) SRAM_START_ADDRESS;
 
 	return ext_ram[address];
 }

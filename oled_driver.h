@@ -1,4 +1,8 @@
-#pragma once
+#ifndef OLED_DRIVER_H
+#define OLED_DRIVER_H
+
+#include <stdint.h>
+
 
 void oled_init(void); // PDF:“OLED LY190-128064” section 9.4
 
@@ -17,3 +21,5 @@ void oled_write_data(char data);
 void oled_print(char* data);
 
 void oled_set_brightness(uint8_t lvl);
+
+#endif
