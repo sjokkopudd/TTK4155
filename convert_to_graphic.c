@@ -47,6 +47,7 @@ void convert_to_format (const uint32_t matrix[1][8192], unsigned char output_mat
 	}
 
 	for (int j = 0; j < 8; j++) {
+		fprintf(output_file, "{ ");
 		for (int i = 0; i < 128; i++) {
 			fprintf(output_file, "0b");
 			for (int bit = 0; bit < 8; bit++) {
@@ -65,7 +66,7 @@ void convert_to_format (const uint32_t matrix[1][8192], unsigned char output_mat
 			}
 			fprintf(output_file, ", ");
 		}
-		fprintf(output_file, "\n");
+		fprintf(output_file, "} ");
 	}
 }
 
