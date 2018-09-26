@@ -12,6 +12,7 @@
 
 #define BAUD 9600
 
+static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 
 void uart_init(unsigned long clk){
 
@@ -29,7 +30,8 @@ void uart_init(unsigned long clk){
 	set_bit(UCSR0B,RXEN0);
 	set_bit(UCSR0B,TXEN0);
 
-	fdevopen(uart_transmit, uart_receive);
+	stdout = &uart_stream;
+
 
 
 }

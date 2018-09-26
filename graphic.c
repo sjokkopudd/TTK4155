@@ -1,12 +1,13 @@
+
 #include "graphic.h"
-#include "pinball.c"
+
 
 
 
 
 void convert_to_format (const uint32_t matrix[1][8192], unsigned char output_matrix[128][8]) {
 
-	FILE *output_file = fopen("output_file.txt", "w"); //this is to write to file output.
+	FILE *output_file = fopen("pinball.txt", "w"); //this is to write to file output.
 
 	if (output_file == NULL)
 	{
@@ -96,3 +97,5 @@ void print_matrix(unsigned char matrix[128][8]){
 		}
 	}
 }
+
+

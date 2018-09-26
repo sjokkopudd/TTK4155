@@ -1,5 +1,3 @@
-
-
 #define F_CPU 4915200
 
 #include "util/delay.h"
@@ -13,7 +11,11 @@
 #include "adc_driver.h"
 #include "joystick_driver.h"
 #include "oled_driver.h"
+#include "oled_menu.h"
 
+
+
+static char* enumStrings[] = {"left", "right", "up", "down", "neutral"}; 
 
 static void ext_mem_init(void){
 	//enable external memory
@@ -22,9 +24,6 @@ static void ext_mem_init(void){
 	clear_bit(SFIOR, XMM1);
 	clear_bit(SFIOR, XMM0);
 }
-
-
-static char* enumStrings[] = {"left", "right", "up", "down", "neutral"}; 
                                
 void ex1(){
 	uint8_t data =10;
@@ -139,14 +138,52 @@ void ex4(){
 
 	oled_init();
 
-
+	oled_goto_line(3);
+		//oled_goto_column(5);
+		oled_print("hello");
 
 	while(1){
-		oled_write_data('c');
+		/*oled_print("hello");
+		oled_print(" ");
+		oled_goto_line(3);
+		oled_print("bye");*/
+
+		//oled_print("World");
+		
+
+		//_delay_ms(1000);
 		
 	}
 
 	
+}
+
+void ex4_5(){
+	ext_mem_init();
+
+	oled_init();
+
+	oled_reset();
+
+	oled_write_screen();
+
+	while(1){
+
+	}
+}
+
+void ex4_6(){
+	ext_mem_init();
+
+	oled_init();
+
+	oled_reset();
+
+	oled_menu_init();
+
+	while(1){
+
+	}
 }
 
 int main(){
@@ -162,8 +199,9 @@ int main(){
 	//adc_init();
 
 	//ex2();
-	ex4();
+	//ex4();
 
+	ex4_6();
 
 
 

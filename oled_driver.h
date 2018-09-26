@@ -12,14 +12,18 @@ void oled_home(void);
 
 void oled_goto_line(uint8_t line);
 
-void OLED_clear_line(uint8_t line);
+void oled_goto_column(uint8_t column);
+
+void oled_clear_line(uint8_t line);
+
 
 void oled_pos(uint8_t row, uint8_t column);
 
-void oled_write_data(char data);
 
 void oled_print(char* data);
 
 void oled_set_brightness(uint8_t lvl);
+
+void oled_write_screen();
 
 #endif
