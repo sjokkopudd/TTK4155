@@ -14,7 +14,26 @@
 
 
 
-void oled_menu_init(void);
+
+//-------------------------------------------
+// type enum: different menu items
+typedef enum enMenuSel
+{
+	eMENU_MAIN,
+	eMENU_PLAY,
+	eMENU_SCORE
+
+
+}enMenuSel;
+
+
+
+
+void printMenu(enMenuSel menuSel);
+
+void updateMenuSelection(enMenuSel currSelection);
+
+menu_t* menuInit(void);
 
 void menu_state_machine();
 

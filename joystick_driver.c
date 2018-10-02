@@ -54,7 +54,16 @@ void joystick_init(void){
 }
 
 // returns joystick direction: left, right, up, down or neutral
-joy_direction_t joystick_get_direction(uint8_t x, uint8_t y){
+joy_direction_t joystick_get_direction(void){
+
+	adc_channel_t CHANNEL;
+	CHANNEL = JOYSTICK_X;
+		
+	x = adc_read_channel(CHANNEL);
+	//delay_ms(100); ->do we need it???
+	CHANNEL = JOYSTICK_Y;
+	y = adc_read_channel(CHANNEL);
+
 	joy_direction_t direction;
 	joy_analog_pos joystick_position;
 

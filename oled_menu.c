@@ -13,37 +13,71 @@ static uint8_t isActive = 0;
 //static menu_t* Menu;
 
 
-menu_t* create_menu(char* name, menu_t* parent){
-	menu_t* menu = malloc(sizeof(menu_t));
-	menu->name = name;
-	menu->parent = parent;
-	menu->child = NULL;
-	menu->sibling = NULL;
-	if(parent != NULL && parent->child == NULL){
-		parent->child = menu;
-	}
-	else if(parent != NULL){
-		menu_t* hlp = parent->child->sibling;
-		menu_t* prev = parent->child;
-		
+static ment_t* mainMenu;
 
-		while(hlp != NULL){
-			prev = hlp;
-			hlp = hlp->sibling;
-			
-		}
-		prev->sibling = menu;
-		
-	}
-	return menu;
+
+void updateMenuSelection(enMenuSel currSelection){
+	menuSel = currSelection;
 }
 
-static void print_menu(menu_t* menu){
+
+
+menu_t * new_menu_item(char* name){
+
+	menu_t * menu = malloc(sizeof(menu_t));
+
+    if (menu){
+        menu->sibling = NULL;
+        menu->child = NULL;
+        menu->name = name;
+    }
+
+    return menu;
+}
+
+
+menu_t * add_sibling(menu_t* menu, char* name){
+	if (menu == NULL )
+        return NULL;
+
+    while (menu->sibling)
+        menu = menu->next;
+
+    return (menu->next = new_menu_item(name));
+}
+
+
+menu_t * add_child(menu_t* parent, char* name){
+	if (parent == NULL)
+        return NULL;
+
+    if (parent->child)
+        return add_sibling(parent->child, name);
+    else
+        return (parent->child = new_menu_item(name));
+}
+
+
+void printMenu(enMenuSel menuSel){
+
+	/*menu_t* menu;
+	char* name;
+	switch(menuSel){
+		case eMENU_MAIN:
+			menu = mainMenu;
+			break;
+		case eMENU_PLAY:
+			
+
+			
+	*/
 	uint8_t cnt = 1;
 	oled_pos(0,0),
 	//oled_reset();
-	oled_print(menu->name);
+	oled_print(mainMenu->name);
 	oled_pos(cnt++,0);
+
+
 
 	oled_print(menu->child->name);
 	menu_t* hlp = menu->child->sibling;
@@ -55,18 +89,29 @@ static void print_menu(menu_t* menu){
 
 }
 
-void oled_menu_init(void){
+
+menu_t* menuInit(void){
+
+	//set selected menu item to main item 
+	menuSel = eMENU_MAIN;
+
 	//create menu entries
-	menu_t* start_screen = create_menu("Start Screen", NULL);
-	menu_t* main_menu =  create_menu("Main Menu", start_screen);
-	menu_t* play_menu =  create_menu("Play", main_menu);
-	menu_t* score_menu =  create_menu("Score", main_menu);
+	//menu_t* start_screen = create_menu("Start Screen", NULL);
 
+	//create menu tree
+	mainMenu = new_menu_item("Main Menu");
+    add_child(mainMenu, "Play");
+    add_child(mainMenu, "Score");
 
-	oled_print(play_menu->sibling->name);
+	return mainMenu;
 
-	print_menu(start_screen);
 }
+
+
+	//oled_print(play_menu->sibling->name);
+
+	//print_menu(start_screen);
+//}
 
 void menu_state_machine(menu_t* current_menu){
 	print_menu(current_menu);

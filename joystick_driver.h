@@ -34,7 +34,7 @@ typedef struct Slider_Pos
 
 void joystick_init(void);
 
-joy_direction_t joystick_get_direction(uint8_t x, uint8_t y);
+joy_direction_t joystick_get_direction();
 joy_analog_pos joystick_get_analog_pos(uint8_t x, uint8_t y);
 
 uint8_t get_slider_pos_left(void);
