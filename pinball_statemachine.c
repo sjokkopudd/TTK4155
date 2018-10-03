@@ -8,7 +8,7 @@
 #include "uart_driver.h"
 
 static enStatePinball enCurrState;
-static enMenuSel enMenuSelected;
+static enMenuLeaf enMenuCurrLeaf;
 static menu_t* currMenu;
 
 //only for debug
@@ -19,7 +19,13 @@ static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_W
 // state machine matrix 
 // depending on current state each event that occurs different
 // state machine functions are called 
-//--------------------------------------------------------
+// states:
+//  eIDLE, 		//welcome screen on oled 
+//	eMENU, 		//select menu points
+//	eDIFF, 		
+//	eSTART,
+//	eSCORE,	
+
 fPtr const evtHndlTable[][MAX_EVENTS] = {
 	{
 		//state idle
@@ -33,7 +39,7 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 		DoNothing
 	},
 	{
-		//state menu select
+		//state menu 
 		DoNothing, 
 		EvtSelectMenuItem,
 		EvtNavigateUp,
@@ -44,16 +50,27 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 		DoNothing
 	},
 	{
-		//state play
+		//state diff
 		EvtNavigateBack,
 		DoNothing,
-		DoNothing, 
-		DoNothing,
+		EvtIncrementDiff, 
+		EvtDecrementDiff,
 		DoNothing, 
 		DoNothing, //TODO -> for actually playing
 		DoNothing, //TODO -> for actually playing
 		DoNothing
 
+	},
+	{
+		//state play
+		EvtQuitGame,
+		DoNothing,
+		DoNothing,
+		DoNothing,
+		DoNothing, 
+		DoNothing,
+		DoNothing,
+		DoNothing
 	},
 	{
 		//state score
@@ -141,6 +158,8 @@ enStatePinball EvtNavigateUp(){
 	//call function to highlight
 	highlightMenu();
 
+	enMenuCurrLeaf
+
 	return eSELECT;
 	/*if(enMenuSelected == eMENU_MAIN){
 		enMenuSelected = eMENU_MAIN;
@@ -177,6 +196,41 @@ enStatePinball EvtDoAnythingWithLeftBtn(){
 enStatePinball EvtDoAnythingWithRightBtn(){
 	return ePLAY;
 }
+
+
+// ---------------------------------------------
+// quit game: go from state ePLAY to eMENU
+// --------------------------------------------
+enStatePinball EvtQuitGame(void){
+	menuNavigateBack();
+
+	return eMENU;
+
+}
+
+
+#define HIGHEST_DIFFICULTY 9
+
+//variable for the difficulty: 0 lowest and 9 highest
+static uint8_t difficulty = 0;
+
+// ---------------------------------------------
+// increment difficulty with Joystick up
+// ---------------------------------------------
+enStatePinball EvtIncrementDiff(void){
+	if(difficulty < HIGHEST_DIFFICULTY){
+		difficulty++;
+	}
+	printDifficulty();
+
+
+}
+enStatePinball EvtDecrementDiff(void){
+
+}
+
+
+
 
 //--------------------------------------------------------
 // pinball game functions

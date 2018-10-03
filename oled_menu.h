@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+
+
  typedef struct menu
 {
 	char* name;
@@ -22,16 +24,18 @@ typedef struct currMenuSelected
 
 
 
-//-------------------------------------------
-// type enum: different menu items
-typedef enum enMenuSel
+// ---------------------------------
+// common typedef for menu leafes in order to change state
+// --------------------------------
+typedef enum enMenuLeaf
 {
-	eMENU_MAIN,
-	eMENU_PLAY,
-	eMENU_SCORE
+	eDIFF,
+	eSTART,
+	eSCORE,
+	eNOLEAF
 
 
-}enMenuSel;
+}enMenuLeaf;
 
 //-------------------------------------------------------
 // functions that are called from pinball_statemachine
@@ -40,7 +44,11 @@ void menuInit(void);
 void printMenu(void);
 void menuNavigateUp(void);
 void menuNavigateDown(void);
+void menuNavigateBack(void);
 void highlightMenu(void);
+void updateDifficulty(uint8_t diff);
+void printDifficulty(void);
+enMenuLeaf getCurrentMenuLeaf(void);
 
 
 

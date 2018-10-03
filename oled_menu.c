@@ -18,6 +18,14 @@ static menu_t* mainMenu;
 static currMenuSelected_t* currMenuSelected;
 static uint8_t lastRowIndex;
 
+static const char* STR_MENU_PLAY = "Play";
+static const char* STR_MENU_START = "Start";
+static const char* STR_MENU_SCORE= "Score";
+static const char* STR_MENU_DIFFICULTY= "Difficulty";
+static const char* STR_MENU_MAIN = "Main Menu";
+static uint8_t currDifficulty = 0;
+
+
 //only for debug
 static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 
@@ -25,11 +33,12 @@ static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_W
 //-----------------------------------------------------------
 // create new menu item
 // ----------------------------------------------------------
-static menu_t * newMenuItem(char* name){
+static menu_t * newMenuItem(menu_t* parent, char* name){
 
 	menu_t * menu = malloc(sizeof(menu_t));
 
     if (menu){
+    	menu->parent = parent;
         menu->sibling = NULL;
         menu->child = NULL;
         menu->name = name;
@@ -48,7 +57,7 @@ static menu_t * addSibling(menu_t* menu, char* name){
     while (menu->sibling)
         menu = menu->sibling;
 
-    return (menu->sibling = newMenuItem(name));
+    return (menu->sibling = newMenuItem(menu->parent, name));
 }
 
 
@@ -62,7 +71,7 @@ static menu_t * addChild(menu_t* parent, char* name){
     if (parent->child)
         return addSibling(parent->child, name);
     else
-        return (parent->child = newMenuItem(name));
+        return (parent->child = newMenuItem(parent,name));
 }
 
 
@@ -142,7 +151,6 @@ void menuNavigateDown(void){
 
 }
 
-
 // ---------------------------------------------------------
 // highlight current selected menu item 
 // ---------------------------------------------------------
@@ -202,6 +210,7 @@ void printMenu(void){
 	lastRowIndex = cnt-1;
 }
 
+
 // -----------------------------------------------------------
 // menu initialization 
 // -----------------------------------------------------------
@@ -214,9 +223,12 @@ void menuInit(void){
 	//menu_t* start_screen = create_menu("Start Screen", NULL);
 
 	//create menu tree
-	mainMenu = newMenuItem("Main Menu");
-    addChild(mainMenu, "Play");
-    addChild(mainMenu, "Score");
+	mainMenu = newMenuItem(NULL, STR_MENU_MAIN);
+    menu_t* play = addChild(mainMenu, STR_MENU_PLAY);
+    addChild(play, STR_MENU_DIFFICULTY); // add sub menu difficulty to play menu
+    addChild(play, STR_MENU_START);		 // add sub menu start to play menu
+
+    addChild(mainMenu, STR_MENU_SCORE);	 // add score to main menu
 
     currMenuSelected->menuItem = mainMenu->child;
 	currMenuSelected->row = 1;
@@ -227,9 +239,60 @@ void menuInit(void){
 
 
 }
+//--------------------------------------------------------
+//
+//--------------------------------------------------------
+void printDifficulty(void){
+	oled_pos(0, 0); 
+	oled_print("Set difficulty");
+	oled_pos(1,0);
+	oled_print("min = 0, max = 9");
+	oled_pos(2,0);
+	oled_print("JOY_UP: ++");
+	oled_pos(3,0);
+	oled_print("JOY_DOWN: --");
+	oled_pos(5,0);
+	oled_print("Diff = ");
+	updateDifficulty(currDifficulty);
+	
+}
+
+void updateDifficulty(uint8_t diff){
+	oled_pos(5, 100);
+	oled_print(diff);
+	
+	currDifficulty = diff;
 
 
+}
 
+// -----------------------------------------------------
+// regarding of current position in menu navigation
+// an enum type is returned. 
+// the current that is active is returned -> if the menu item
+// is no leaf (has children), the enum value eNOLEAVE is returned
+// as state changes in pinball_statemachine are only necessary if
+// events based on a leaf are triggered 
+// -----------------------------------------------------
+enMenuLeaf getCurrentMenuLeaf(void){
+	//current selected menu item is a parent (no leaf)
+	if(currMenuSelected->menuItem->child != NULL){
+		return eNOLEAF;
+	}
+
+	//current selected menu item has no child -> is a leaf
+	//check which leaf and return corresponding value
+	if(currMenuSelected->menuItem->name == STR_MENU_DIFFICULTY){
+		return eDIFF;
+	}
+	else if(currMenuSelected->menuItem->name == STR_MENU_START){
+		return eSTART;
+	}
+	else if(currMenuSelected->menuItem->name == STR_MENU_SCORE){
+		return eSCORE;
+	}
+
+}
 
 
 

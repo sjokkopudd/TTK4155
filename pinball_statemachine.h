@@ -16,9 +16,10 @@
 // --------------------------------------------------------
 typedef enum enStatePinball {
 	eIDLE, 		//welcome screen on oled 
-	eSELECT, 	//select menu points
-	ePLAY, 		//play game
-	eSCORE		//display highscores
+	eMENU, 	//select menu points
+	eDIFF, 		//play game
+	ePLAY,
+	eSCORE,	//display highscores
 } enStatePinball;
 
 // --------------------------------------------------------
@@ -53,6 +54,9 @@ enStatePinball EvtNavigateUp(void);
 enStatePinball EvtNavigateDown(void);
 enStatePinball EvtDoAnythingWithLeftBtn(void);
 enStatePinball EvtDoAnythingWithRightBtn(void);
+enStatePinball EvtQuitGame(void);
+enStatePinball EvtIncrementDiff(void);
+enStatePinball EvtDecrementDiff(void);
 
 //--------------------------------------------------------
 // pinball game functions
