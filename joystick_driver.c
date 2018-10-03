@@ -59,10 +59,10 @@ joy_direction_t joystick_get_direction(void){
 	adc_channel_t CHANNEL;
 	CHANNEL = JOYSTICK_X;
 		
-	x = adc_read_channel(CHANNEL);
+	uint8_t x = adc_read_channel(CHANNEL);
 	//delay_ms(100); ->do we need it???
 	CHANNEL = JOYSTICK_Y;
-	y = adc_read_channel(CHANNEL);
+	uint8_t y = adc_read_channel(CHANNEL);
 
 	joy_direction_t direction;
 	joy_analog_pos joystick_position;
@@ -71,22 +71,22 @@ joy_direction_t joystick_get_direction(void){
 
 	// if x value is under threshold for direction left and x input is larger than y input
 	if((x <= init_pos_x - THRESH_DIR) && (abs(joystick_position.x)>abs(joystick_position.y))){
-		direction = LEFT;
+		direction = eLEFT;
 	}
 	// if x value is over threshold for direction right and x input is larger than y input
 	else if(x >= init_pos_x + THRESH_DIR && (abs(joystick_position.x)>abs(joystick_position.y))){
-		direction = RIGHT;
+		direction = eRIGHT;
 	}
 	// if y value is under threshold for direction right and y input is larger than x input
 	else if(y <= init_pos_y - THRESH_DIR && (abs(joystick_position.y)>abs(joystick_position.x))){
-		direction = DOWN;
+		direction = eDOWN;
 	}
 	// if y value is over threshold for direction up and y input is larger than x input
 	else if(y >= init_pos_y + THRESH_DIR && (abs(joystick_position.y)>abs(joystick_position.x))){
-		direction = UP;
+		direction = eUP;
 	}
 	else{
-		direction = NEUTRAL;
+		direction = eNEUTRAL;
 	}
 
 	return direction;

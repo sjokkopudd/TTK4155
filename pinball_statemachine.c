@@ -3,11 +3,16 @@
 #include "joystick_driver.h"
 #include "stdint.h"
 #include "stdio.h"
+#include "oled_driver.h"
 #include "string.h"
+#include "uart_driver.h"
 
 static enStatePinball enCurrState;
 static enMenuSel enMenuSelected;
 static menu_t* currMenu;
+
+//only for debug
+static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 
 
 //--------------------------------------------------------
@@ -15,13 +20,14 @@ static menu_t* currMenu;
 // depending on current state each event that occurs different
 // state machine functions are called 
 //--------------------------------------------------------
-fPtr const evtHndlTable [][MAX_EVENTS] = {
+fPtr const evtHndlTable[][MAX_EVENTS] = {
 	{
 		//state idle
 		DoNothing,
 		EvtStartApplication,
 		DoNothing,
-		DoNothing, 
+		DoNothing,
+		DoNothing,  
 		DoNothing, 
 		DoNothing,
 		DoNothing
@@ -32,6 +38,7 @@ fPtr const evtHndlTable [][MAX_EVENTS] = {
 		EvtSelectMenuItem,
 		EvtNavigateUp,
 		EvtNavigateDown,
+		DoNothing, 
 		DoNothing,
 		DoNothing,
 		DoNothing
@@ -42,17 +49,19 @@ fPtr const evtHndlTable [][MAX_EVENTS] = {
 		DoNothing,
 		DoNothing, 
 		DoNothing,
+		DoNothing, 
 		DoNothing, //TODO -> for actually playing
 		DoNothing, //TODO -> for actually playing
 		DoNothing
 
-	}
+	},
 	{
 		//state score
 		EvtNavigateBack,
 		DoNothing,
 		DoNothing,
 		DoNothing,
+		DoNothing, 
 		DoNothing,
 		DoNothing,
 		DoNothing
@@ -61,24 +70,31 @@ fPtr const evtHndlTable [][MAX_EVENTS] = {
 
 
 
-/--------------------------------------------------------
+//--------------------------------------------------------
 // state machine functions
 // -------------------------------------------------------
 
 //-----------------------------------------------------
 // DoNothing: returns current state
 // ----------------------------------------------------
-enStatePinball DoNothing(void*){
+enStatePinball DoNothing(){
 	return enCurrState;
 }
 
 //-----------------------------------------------------
 // navigate from start screen to menu
 // ----------------------------------------------------
-enStatePinball EvtStartApplication(void*){
+enStatePinball EvtStartApplication(){
+	stdout = &uart_stream;
+	printf("event start app");
+
+
 	menuInit();
 	//print menu to oled
 	printMenu();
+
+	stdout = &uart_stream;
+	printf("after print menu");
 
 	return eSELECT;
 }
@@ -86,7 +102,7 @@ enStatePinball EvtStartApplication(void*){
 //-----------------------------------------------------
 // navigate from selected menu item to parent menu item
 // ----------------------------------------------------
-enStatePinball EvtNavigateBack(void*){
+enStatePinball EvtNavigateBack(){
 	//as only one hierarchy is implemented go back to main menu
 	enMenuSelected = eMENU_MAIN;
 
@@ -99,7 +115,10 @@ enStatePinball EvtNavigateBack(void*){
 //-----------------------------------------------------
 // select menu item
 // ----------------------------------------------------
-enStatePinball EvtSelectMenuItem(void*){
+enStatePinball EvtSelectMenuItem(){
+	
+	menuNavigationSelect();
+
 	switch(enMenuSelected){
 		case eMENU_PLAY: 
 			return ePLAY;
@@ -114,9 +133,16 @@ enStatePinball EvtSelectMenuItem(void*){
 //-----------------------------------------------------
 // navigate to upper menu item
 // ----------------------------------------------------
-enStatePinball EvtNavigateUp(void*){
+enStatePinball EvtNavigateUp(){
 	
-	if(enMenuSelected == eMENU_MAIN){
+	//call function of oled_menu to navigate up
+	menuNavigateUp();
+
+	//call function to highlight
+	highlightMenu();
+
+	return eSELECT;
+	/*if(enMenuSelected == eMENU_MAIN){
 		enMenuSelected = eMENU_MAIN;
 	}
 	else{
@@ -125,20 +151,17 @@ enStatePinball EvtNavigateUp(void*){
 	//call function to highlight selected item in oled
 	highlightMenu();
 
-	return eSELECT;
+	return eSELECT*/
 
 }
 
 //-----------------------------------------------------
 // navigate to lower menu item
 // ----------------------------------------------------
-enStatePinball EvtNavigateDown(void*){
-	if(enMenuSelected == eMENU_SCORE){
-		enMenuSelected = eMENU_SCORE;
-	}
-	else{
-		enMenuSelected++;
-	}
+enStatePinball EvtNavigateDown(){
+	//call function of oled_menu to navigate down
+	menuNavigateDown();
+
 	//call function to highlight selected item in oled
 	highlightMenu();
 
@@ -146,25 +169,78 @@ enStatePinball EvtNavigateDown(void*){
 }
 
 //TODO
-enStatePinball EvtDoAnythingWithLeftBtn(void*){
+enStatePinball EvtDoAnythingWithLeftBtn(){
 	return ePLAY;
 }
 
 //TODO
-enStatePinball EvtDoAnythingWithRightBtn(void*){
+enStatePinball EvtDoAnythingWithRightBtn(){
 	return ePLAY;
 }
 
 //--------------------------------------------------------
 // pinball game functions
 // -------------------------------------------------------
-void InitPinballGame(void){
+void InitPinballGame(){
 
 	enCurrState = eIDLE;
-	enMenuSel = eMENU_MAIN;
+	
 }
-enStateEvent GetEvent(void);
-void PinballGameProcess(void);
+
+// -------------------------------------------------------
+// calls function of joystick and button
+// in order to detect joystick movement or button press
+// ------------------------------------------------------
+enStateEvent GetEvent(){
+	//remember last joystick direction
+	static joy_direction_t lastDirection = eNEUTRAL;
+	joy_direction_t currDirection = joystick_get_direction();
+	
+
+	//debug
+	stdout = &uart_stream;
+	
+	
+
+	//do anything only if current directory is different from last
+	if(lastDirection != currDirection){
+		//set new direction 
+		lastDirection = currDirection;
+		switch(currDirection){
+			case eLEFT:
+				return eJOYSTICK_LEFT;
+			case eRIGHT:
+				return eJOYSTICK_RIGHT;
+			case eUP:
+				return eJOYSTICK_UP;
+			case eDOWN:
+				return eJOYSTICK_DOWN;
+			case eNEUTRAL:
+				return eJOYSTICK_NEUTRAL;
+			
+		}
+	}
+
+	return eNO_EVENT;
+
+}
+
+
+
+// ------------------------------------------------------
+// main pinball processs, gets current event and according
+// to state and event a state change is executed or not 
+// -----------------------------------------------------
+void PinballGameProcess(void){
+	enStateEvent currEvent;
+	currEvent = GetEvent();
+	//function call, pointed to by current state and event (matrix)
+	enCurrState = (* evtHndlTable[enCurrState][currEvent])();
+
+	stdout = &uart_stream;
+	printf("current state %d\r\n: ", enCurrState);
+
+}
 
 // ------------------------------------------------------
 //print functions to oled
@@ -173,16 +249,14 @@ void printHighScore(uint16_t score){
 
 
 }
-void printAnimation(void*/*any animation: enum*/){
+void printAnimation(void* any/*any animation: enum*/){
 	
 }
 void printBestPlayers(void){
 
 }
-void printMenu(void){
-	//call print function of menu
-	swi
+
+void printInitScreen(void){
 
 }
-void printInitScreen(void);
-void highlightMenu(void);
+

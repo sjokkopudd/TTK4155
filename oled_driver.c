@@ -77,6 +77,8 @@ void oled_init(void){
   //set column start address (upper)
   write_c(0x10);
 
+  oled_reset();
+
 
 }
 
@@ -175,7 +177,7 @@ void oled_print(char* data){
 void oled_write_screen(){
   //set the segment orientation: SEG0 is col 0
   
-
+ 
   for (int j = 0; j < 8; j++){
     oled_goto_line(j);
     for (int i = 0; i < 128; i++){

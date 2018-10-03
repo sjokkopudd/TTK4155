@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#define MAX_EVENTS 7
+#define MAX_EVENTS 8
 
 // --------------------------------------------------------
 // enum type: states of pinball game 
@@ -29,6 +29,7 @@ typedef enum enStateEvent {
 	eJOYSTICK_RIGHT,		/* select menu item */
 	eJOYSTICK_UP,			/* navigate up in menu  */
 	eJOYSTICK_DOWN,			/* navigate down in menu */
+	eJOYSTICK_NEUTRAL,
 	eBUTTON_LEFT,			/* */
 	eBUTTON_RIGHT,			/* */
 	eNO_EVENT				/* no interaction */
@@ -38,20 +39,20 @@ typedef enum enStateEvent {
 //--------------------------------------------------------
 // typedef function pointer for pinball game
 // -------------------------------------------------------
-typedef enStatePinball (*fPtr)(void*);
+typedef enStatePinball (*fPtr)(void);
 
 
 //--------------------------------------------------------
 // state machine functions
 // -------------------------------------------------------
-enStatePinball DoNothing(void*);
-enStatePinball EvtStartApplication(void*);
-enStatePinball EvtNavigateBack(void*);
-enStatePinball EvtSelectMenuItem(void*);
-enStatePinball EvtNavigateUp(void*);
-enStatePinball EvtNavigateDown(void*);
-enStatePinball EvtDoAnythingWithLeftBtn(void*);
-enStatePinball EvtDoAnythingWithRightBtn(void*);
+enStatePinball DoNothing(void);
+enStatePinball EvtStartApplication(void);
+enStatePinball EvtNavigateBack(void);
+enStatePinball EvtSelectMenuItem(void);
+enStatePinball EvtNavigateUp(void);
+enStatePinball EvtNavigateDown(void);
+enStatePinball EvtDoAnythingWithLeftBtn(void);
+enStatePinball EvtDoAnythingWithRightBtn(void);
 
 //--------------------------------------------------------
 // pinball game functions
@@ -64,11 +65,10 @@ void PinballGameProcess(void);
 //print functions to oled
 // ------------------------------------------------------
 void printHighScore(uint16_t score);
-void printAnimation(void*/*any animation: enum*/);
+void printAnimation(void* any/*any animation: enum*/);
 void printBestPlayers(void);
-void printMenu(void); 
 void printInitScreen(void);
-void highlightScreenLine(void);
+
 
 
 

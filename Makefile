@@ -1,5 +1,5 @@
 # List all source files to be compiled; separate with space
-SOURCE_FILES := main.c uart_driver.c sram_driver.c adc_driver.c joystick_driver.c oled_driver.c oled_menu.c
+SOURCE_FILES := main.c uart_driver.c sram_driver.c adc_driver.c joystick_driver.c oled_driver.c oled_menu.c pinball_statemachine.c SPI_driver.c
 
 # Set this flag to "yes" (no quotes) to use JTAG; otherwise ISP (SPI) is used
 PROGRAM_WITH_JTAG := no
@@ -15,7 +15,7 @@ TARGET_CPU := atmega162
 TARGET_DEVICE := m162
 
 CC := avr-gcc
-CFLAGS := -O -std=c11 -mmcu=$(TARGET_CPU) -Werror -Wall
+CFLAGS := -O -std=c11 -mmcu=$(TARGET_CPU)
 
 OBJECT_FILES = $(SOURCE_FILES:%.c=$(BUILD_DIR)/%.o)
 

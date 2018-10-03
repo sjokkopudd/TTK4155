@@ -1,7 +1,7 @@
 #ifndef OLED_MENU_H
 #define OLED_MENU_H
 
-
+#include <stdint.h>
 
  typedef struct menu
 {
@@ -11,6 +11,13 @@
 	struct menu* sibling;
 	
 }menu_t;
+
+typedef struct currMenuSelected
+{
+	uint8_t row;
+	menu_t* menuItem;
+
+}currMenuSelected_t;
 
 
 
@@ -26,16 +33,15 @@ typedef enum enMenuSel
 
 }enMenuSel;
 
+//-------------------------------------------------------
+// functions that are called from pinball_statemachine
+//------------------------------------------------------
+void menuInit(void);
+void printMenu(void);
+void menuNavigateUp(void);
+void menuNavigateDown(void);
+void highlightMenu(void);
 
-
-
-void printMenu(enMenuSel menuSel);
-
-void updateMenuSelection(enMenuSel currSelection);
-
-menu_t* menuInit(void);
-
-void menu_state_machine();
 
 
 #endif

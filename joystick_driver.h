@@ -10,11 +10,11 @@ typedef struct Joy_Analog_Pos
 
 
 typedef enum{
-	LEFT = 0,
-	RIGHT = 1,
-	UP = 2,
-	DOWN = 3,
-	NEUTRAL = 4
+	eLEFT = 0,
+	eRIGHT = 1,
+	eUP = 2,
+	eDOWN = 3,
+	eNEUTRAL = 4
 } joy_direction_t;
 
 typedef enum{

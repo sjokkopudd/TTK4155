@@ -12,6 +12,9 @@
 #include "joystick_driver.h"
 #include "oled_driver.h"
 #include "oled_menu.h"
+#include "pinball_statemachine.h"
+#include "SPI_driver.h"
+
 
 
 
@@ -163,11 +166,13 @@ void ex4_5(){
 
 	oled_init();
 
-	oled_reset();
-
 	oled_write_screen();
 
+	InitPinballGame();
+	
 	while(1){
+		PinballGameProcess();
+		_delay_ms(1000);
 
 	}
 }
@@ -177,13 +182,32 @@ void ex4_6(){
 
 	oled_init();
 
-	oled_reset();
+	oled_write_screen();
 
-	oled_menu_init();
+	//oled_reset();
+
+	//menuInit();
+
+
+	while(1){
+		//PinballGameProcess();
+	}
+}
+
+void ex5_can(){
+	ext_mem_init();
+	SPI_init();
+	char test = 0b00001011;
 
 	while(1){
 
+		SPI_send(test);
+		char val = SPI_read();
+		printf("val: %s\r\n", val);
+
+		
 	}
+
 }
 
 int main(){
@@ -201,7 +225,9 @@ int main(){
 	//ex2();
 	//ex4();
 
-	ex4_6();
+	//ex5_can();
+
+	ex4_5();
 
 
 
