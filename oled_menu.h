@@ -7,7 +7,7 @@
 
  typedef struct menu
 {
-	char* name;
+	const char* name;
 	struct menu* parent;
 	struct menu* child;
 	struct menu* sibling;
@@ -29,9 +29,9 @@ typedef struct currMenuSelected
 // --------------------------------
 typedef enum enMenuLeaf
 {
-	eDIFF,
-	eSTART,
-	eSCORE,
+	eSET_DIFF,
+	eSTART_GAME,
+	eSEE_SCORE,
 	eNOLEAF
 
 
@@ -44,11 +44,12 @@ void menuInit(void);
 void printMenu(void);
 void menuNavigateUp(void);
 void menuNavigateDown(void);
-void menuNavigateBack(void);
+void menuNavigateBack(uint8_t isLeaf);
+enMenuLeaf menuNavigationSelect(void);
+
 void highlightMenu(void);
 void updateDifficulty(uint8_t diff);
 void printDifficulty(void);
-enMenuLeaf getCurrentMenuLeaf(void);
 
 
 

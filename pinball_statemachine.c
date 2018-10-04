@@ -7,12 +7,32 @@
 #include "string.h"
 #include "uart_driver.h"
 
+
+#define DEBUG
+
+#define MINIMUM_DIFFICULTY 0
+#define MAXIMUM_DIFFICULTY 9
+
+//variable for the difficulty: 0 lowest and 9 highest
+static uint8_t difficulty = 0;
+
 static enStatePinball enCurrState;
 static enMenuLeaf enMenuCurrLeaf;
 static menu_t* currMenu;
 
 //only for debug
-static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
+//static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
+
+// ---------------------------------------------------------------
+// events for debugging
+// 
+//
+// 1. nothing - start - play - diff - incr diff - incr diff
+// static enStateEvent debug_events[]= {eJOYSTICK_LEFT, eJOYSTICK_RIGHT,eJOYSTICK_RIGHT,eJOYSTICK_UP, eJOYSTICK_UP};
+
+// 2. 
+static enStateEvent debug_events[]= {eJOYSTICK_RIGHT, eJOYSTICK_RIGHT,eJOYSTICK_LEFT,eJOYSTICK_UP, eJOYSTICK_UP};
+static const char* testEventArray[] = {"eJOYSTICK_LEFT", "eJOYSTICK_RIGHT", "eJOYSTICK_UP", "eJOYSTICK_DOWN", "eJOYSTICK_NEUTRAL", "eBUTTON_LEFT", "eBUTTON_RIGHT", "eNO_EVENT"};
 
 
 //--------------------------------------------------------
@@ -40,7 +60,7 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 	},
 	{
 		//state menu 
-		DoNothing, 
+		EvtNavigateBack, 
 		EvtSelectMenuItem,
 		EvtNavigateUp,
 		EvtNavigateDown,
@@ -51,7 +71,7 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 	},
 	{
 		//state diff
-		EvtNavigateBack,
+		EvtExitLeaf,
 		DoNothing,
 		EvtIncrementDiff, 
 		EvtDecrementDiff,
@@ -63,7 +83,7 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 	},
 	{
 		//state play
-		EvtQuitGame,
+		EvtExitLeaf,
 		DoNothing,
 		DoNothing,
 		DoNothing,
@@ -74,7 +94,7 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 	},
 	{
 		//state score
-		EvtNavigateBack,
+		EvtExitLeaf,
 		DoNothing,
 		DoNothing,
 		DoNothing,
@@ -95,6 +115,7 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 // DoNothing: returns current state
 // ----------------------------------------------------
 enStatePinball DoNothing(){
+	printf("do nothing, state: %d\n", enCurrState);
 	return enCurrState;
 }
 
@@ -102,30 +123,25 @@ enStatePinball DoNothing(){
 // navigate from start screen to menu
 // ----------------------------------------------------
 enStatePinball EvtStartApplication(){
-	stdout = &uart_stream;
-	printf("event start app");
-
 
 	menuInit();
 	//print menu to oled
 	printMenu();
 
-	stdout = &uart_stream;
-	printf("after print menu");
-
-	return eSELECT;
+	return eMENU;
 }
 
 //-----------------------------------------------------
 // navigate from selected menu item to parent menu item
 // ----------------------------------------------------
 enStatePinball EvtNavigateBack(){
-	//as only one hierarchy is implemented go back to main menu
-	enMenuSelected = eMENU_MAIN;
 
-	printMenu();
+	//call menu function to navigate back to parent
+	menuNavigateBack(0);
 
-	return eSELECT;
+	highlightMenu();
+
+	return eMENU;
 
 }
 
@@ -134,15 +150,18 @@ enStatePinball EvtNavigateBack(){
 // ----------------------------------------------------
 enStatePinball EvtSelectMenuItem(){
 	
-	menuNavigationSelect();
+	enMenuLeaf currentLeaf = menuNavigationSelect();
 
-	switch(enMenuSelected){
-		case eMENU_PLAY: 
+	switch(currentLeaf){
+		case eSET_DIFF: 
+			printDifficulty();
+			return eDIFF;
+		case eSTART_GAME:
 			return ePLAY;
-		case eMENU_SCORE:
+		case eSEE_SCORE:
 			return eSCORE;
-		default:
-			return eMENU_MAIN;
+		case eNOLEAF:
+			return eMENU;
 	}
 
 }
@@ -158,19 +177,8 @@ enStatePinball EvtNavigateUp(){
 	//call function to highlight
 	highlightMenu();
 
-	enMenuCurrLeaf
 
-	return eSELECT;
-	/*if(enMenuSelected == eMENU_MAIN){
-		enMenuSelected = eMENU_MAIN;
-	}
-	else{
-		enMenuSelected--;
-	}
-	//call function to highlight selected item in oled
-	highlightMenu();
-
-	return eSELECT*/
+	return eMENU;
 
 }
 
@@ -184,7 +192,7 @@ enStatePinball EvtNavigateDown(){
 	//call function to highlight selected item in oled
 	highlightMenu();
 
-	return eSELECT;
+	return eMENU;
 }
 
 //TODO
@@ -201,35 +209,54 @@ enStatePinball EvtDoAnythingWithRightBtn(){
 // ---------------------------------------------
 // quit game: go from state ePLAY to eMENU
 // --------------------------------------------
-enStatePinball EvtQuitGame(void){
-	menuNavigateBack();
+enStatePinball EvtExitLeaf(void){
+	//call navigation back with parameter 1 -> 
+	//indicates that this is called from a leaf state
+	//returning to underlying menu
+	//for example: in state diff: Joystick left
+	//prints menu: Play
+	// 				 Difficulty
+	//				 Start
+	//
+	menuNavigateBack(1);
+
+	highlightMenu();
 
 	return eMENU;
 
 }
 
 
-#define HIGHEST_DIFFICULTY 9
-
-//variable for the difficulty: 0 lowest and 9 highest
-static uint8_t difficulty = 0;
 
 // ---------------------------------------------
 // increment difficulty with Joystick up
 // ---------------------------------------------
 enStatePinball EvtIncrementDiff(void){
-	if(difficulty < HIGHEST_DIFFICULTY){
+
+	if(difficulty < MAXIMUM_DIFFICULTY){
 		difficulty++;
 	}
-	printDifficulty();
 
+	// update in oled_menu
+	updateDifficulty(difficulty);
 
+	return eDIFF;
 }
+
+
+// ---------------------------------------------
+// decrement difficulty with Joystick down
+// ---------------------------------------------
 enStatePinball EvtDecrementDiff(void){
+	if(difficulty > MINIMUM_DIFFICULTY){
+		difficulty--;
+	}
 
+	// update in oled_menu
+	updateDifficulty(difficulty);
+
+	return eDIFF;
 }
-
-
 
 
 //--------------------------------------------------------
@@ -245,17 +272,15 @@ void InitPinballGame(){
 // calls function of joystick and button
 // in order to detect joystick movement or button press
 // ------------------------------------------------------
+
+
 enStateEvent GetEvent(){
-	//remember last joystick direction
 	static joy_direction_t lastDirection = eNEUTRAL;
-	joy_direction_t currDirection = joystick_get_direction();
-	
+	joy_direction_t currDirection;
 
-	//debug
-	stdout = &uart_stream;
-	
-	
 
+	//currDirection = joystick_get_direction();
+	
 	//do anything only if current directory is different from last
 	if(lastDirection != currDirection){
 		//set new direction 
@@ -280,19 +305,22 @@ enStateEvent GetEvent(){
 }
 
 
-
 // ------------------------------------------------------
 // main pinball processs, gets current event and according
 // to state and event a state change is executed or not 
 // -----------------------------------------------------
 void PinballGameProcess(void){
+	static uint8_t cnt = 0;
 	enStateEvent currEvent;
-	currEvent = GetEvent();
-	//function call, pointed to by current state and event (matrix)
+	#ifndef DEBUG
+		currEvent = GetEvent();
+	#else
+		currEvent = debug_events[cnt];
+		cnt = (cnt +1)%5;
+		//function call, pointed to by current state and event (matrix)
+		printf("%s\n", testEventArray[currEvent]);
+	#endif
 	enCurrState = (* evtHndlTable[enCurrState][currEvent])();
-
-	stdout = &uart_stream;
-	printf("current state %d\r\n: ", enCurrState);
 
 }
 

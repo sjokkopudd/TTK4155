@@ -54,7 +54,7 @@ enStatePinball EvtNavigateUp(void);
 enStatePinball EvtNavigateDown(void);
 enStatePinball EvtDoAnythingWithLeftBtn(void);
 enStatePinball EvtDoAnythingWithRightBtn(void);
-enStatePinball EvtQuitGame(void);
+enStatePinball EvtExitLeaf(void);
 enStatePinball EvtIncrementDiff(void);
 enStatePinball EvtDecrementDiff(void);
 
