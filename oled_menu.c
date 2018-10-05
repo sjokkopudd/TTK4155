@@ -6,9 +6,9 @@
 #include <stdio.h>
 
 
-#ifndef DEBUG
-#define DEBUG
-#endif
+//#ifndef DEBUG
+//#define DEBUG
+//#endif
 
 #ifndef DEBUG
 #include <avr/io.h>
@@ -25,7 +25,7 @@
 // -----------------------------------
 
 
-#define MENU_HIGHLIGHT_INDENT 40
+#define MENU_HIGHLIGHT_INDENT 100
 #define MENU_PRINT_INDENT 10
 
 
@@ -206,12 +206,19 @@ void menuNavigateDown(void){
 // highlight current selected menu item 
 // ---------------------------------------------------------
 void highlightMenu(void){
+	// remember old row to clean
+	static uint8_t idx_row = 1;
 	//TODO: add function to write to oled -> invert font color
 	// and background color at that row
 	//oled(currMenuSelected->row;
 	#ifndef DEBUG
+		oled_pos(idx_row,MENU_HIGHLIGHT_INDENT);
+		oled_print(" ");
+
 		oled_pos(currMenuSelected->row,MENU_HIGHLIGHT_INDENT);
-		oled_print("<");
+		oled_print(">");
+
+		idx_row = currMenuSelected->row;
 	#else
 		printf("highlight row: %d\r\n", currMenuSelected->row);
 	#endif
@@ -269,6 +276,8 @@ void printMenu(void){
 			}
 		}
 	}
+
+	highlightMenu();
 	
 }
 

@@ -8,7 +8,7 @@
 #include "uart_driver.h"
 
 
-#define DEBUG
+//#define DEBUG
 
 #define MINIMUM_DIFFICULTY 0
 #define MAXIMUM_DIFFICULTY 9
@@ -115,7 +115,6 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 // DoNothing: returns current state
 // ----------------------------------------------------
 enStatePinball DoNothing(){
-	printf("do nothing, state: %d\n", enCurrState);
 	return enCurrState;
 }
 
@@ -264,6 +263,10 @@ enStatePinball EvtDecrementDiff(void){
 // -------------------------------------------------------
 void InitPinballGame(){
 
+	oled_init();
+
+	oled_write_screen();
+
 	enCurrState = eIDLE;
 	
 }
@@ -279,7 +282,7 @@ enStateEvent GetEvent(){
 	joy_direction_t currDirection;
 
 
-	//currDirection = joystick_get_direction();
+	currDirection = joystick_get_direction();
 	
 	//do anything only if current directory is different from last
 	if(lastDirection != currDirection){

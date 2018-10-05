@@ -37,13 +37,3 @@ uint8_t adc_read_channel(adc_channel_t CHANNEL){
 
 }
 
-
-/*_delay_us(1);
-
-	uint16_t data_from_adc;
-
-	volatile char *ext_ram = (char *) 0x1000;
-	ext_ram[0x400] = 0x4; //single ended ch1
-	_delay_us(60);
-	data_from_adc = ext_ram[0x400];
-	printf(data_from_adc);*/

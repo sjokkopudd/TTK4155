@@ -167,7 +167,7 @@ static void oled_write_char(char data, FILE * _not_used){
 }
 
 //prints string to oled 
-void oled_print(char* data){
+void oled_print(const char* data){
   
   stdout = &oled_stream;
   printf(data); 

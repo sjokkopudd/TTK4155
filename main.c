@@ -68,20 +68,9 @@ void ex2(){
 	ext_mem_init();
 	
 	//run the test program
-	//sram_test();
+	sram_test();
 
-
-	//test sram, adc and oled with the gal
-	volatile char *ext_ram = (char *) 0x1000;
-	uint8_t data = 55;
-
-	joystick_init();
-	joy_direction_t dir;
-	joy_analog_pos analog_pos;
-
-	volatile uint8_t adc_x = 0;
-	volatile uint8_t adc_y = 0;
-	while(1) {
+	while(1){
 		//write to OLED
 		//ext_mem_write(0x300, data);
 
@@ -102,6 +91,28 @@ void ex2(){
 
 		//_delay_ms(3000);
 
+
+	}
+}
+
+// --------------------------------------------------------
+// test joystick
+// -------------------------------------------------------
+void ex3_joystick(){
+
+
+	//test sram, adc and oled with the gal
+	volatile char *ext_ram = (char *) 0x1000;
+	uint8_t data = 55;
+
+	joystick_init();
+	joy_direction_t dir;
+	joy_analog_pos analog_pos;
+
+	volatile uint8_t adc_x = 0;
+	volatile uint8_t adc_y = 0;
+	while(1) {
+		
 		adc_channel_t CHANNEL;
 		CHANNEL = JOYSTICK_X;
 		
@@ -135,66 +146,47 @@ void ex2(){
 	}
 }
 
-void ex4(){
+// -------------------------------------------
+// first steps with oled -> init, 
+// go to specified line or column and print
+// test string
+// ------------------------------------------
+void ex4_oled_first_steps(){
 
 	ext_mem_init();
 
 	oled_init();
 
 	oled_goto_line(3);
-		//oled_goto_column(5);
-		oled_print("hello");
+
+	oled_print("hello");
 
 	while(1){
-		/*oled_print("hello");
-		oled_print(" ");
-		oled_goto_line(3);
-		oled_print("bye");*/
-
-		//oled_print("World");
-		
-
-		//_delay_ms(1000);
-		
+	
 	}
 
 	
 }
 
-void ex4_5(){
+// -------------------------------------------
+// test oled and menu of oled
+// -------------------------------------------
+static void ex4_oled_menu(){
 	ext_mem_init();
-
-	oled_init();
-
-	oled_write_screen();
 
 	InitPinballGame();
 	
 	while(1){
+
 		PinballGameProcess();
-		_delay_ms(1000);
-
 	}
 }
 
-void ex4_6(){
-	ext_mem_init();
 
-	oled_init();
-
-	oled_write_screen();
-
-	//oled_reset();
-
-	//menuInit();
-
-
-	while(1){
-		//PinballGameProcess();
-	}
-}
-
-void ex5_can(){
+// --------------------------------------------
+// test spi interface - send and read test byte
+// --------------------------------------------d
+void ex5_spi_init(){
 	ext_mem_init();
 	SPI_init();
 	char test = 0b00001011;
@@ -227,7 +219,7 @@ int main(){
 
 	//ex5_can();
 
-	ex4_5();
+	ex4_oled_menu();
 
 
 
