@@ -5,6 +5,9 @@
 #include "common.h"
 
 void SPI_send(char data){
+
+	clear_bit(PORTB, PB4);
+
 	/* Start transmission */
 	SPDR = data;
 	
@@ -12,12 +15,10 @@ void SPI_send(char data){
 	loop_until_bit_is_set(SPSR,SPIF);
 
 
-	
-
 }
 
 
-char SPI_read(){
+uint8_t SPI_read(){
 	// Remember that to read something from the slave, the master must transmit a dummy byte
 	SPDR = 0x00;
 
