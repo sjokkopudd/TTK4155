@@ -1,6 +1,8 @@
 #include "MCP_driver"
 #include <stdint.h>
 #include "common.h"
+#include <avr/io.h>
+#include <avr/delay.h>
 
 
 // -------------------------------------------
@@ -73,7 +75,9 @@ uint8_t mcp_init(uint8_t mode){
 }
 
 
-
+// ------------------------------------------------------------
+// 
+// -----------------------------------------------------------
 void mcp_write(uint8_t address, uint8_t data){
 	mcp_activate_slave();
 
@@ -87,10 +91,41 @@ void mcp_write(uint8_t address, uint8_t data){
 
 }
 
-mcp_request_to_send()
-mcp_bit_modify()
 
+// -------------------------------------------------------------
+// 
+// -------------------------------------------------------------
+void mcp_request_to_send(uint8_t byte){
+	mcp_activate_slave();
+	
+	SPI_write(byte);
+	
+	mcp_deactivate_slave();
 
+}
+
+// -------------------------------------------------------------
+// modify individual bits in specific status and control register
+// -------------------------------------------------------------
+void mcp_bit_modify(uint8_t adress, uint8_t mask, uint8_t data){
+
+	mcp_activate_slave();
+	
+	SPI_write(MCP_BITMOD);
+
+	SPI_write(adress);
+
+	SPI_write(mask);
+
+	SPI_write(data);
+	
+	mcp_deactivate_slave();
+
+}
+
+// ------------------------------------------------------------
+// resets can controller 
+// ------------------------------------------------------------
 void mcp_reset(){
 	mcp_activate_slave();
 
@@ -102,7 +137,21 @@ void mcp_reset(){
 _	delay_ms(10); 
 }
 
-mcp_read_status()
+// -----------------------------------------------------------
+// reads current status of can controller
+// -----------------------------------------------------------
+uint8_t mcp_read_status(){
+	mcp_activate_slave();
+	
+	SPI_write(MCP_READ_STATUS);
+
+	uint8_t status = SPI_read();
+	
+	mcp_deactivate_slave();
+	
+	return status;
+
+}
 
 
 
