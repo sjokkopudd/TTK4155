@@ -14,9 +14,12 @@
 #include "oled_menu.h"
 #include "pinball_statemachine.h"
 #include "SPI_driver.h"
+#include "mcp_driver.h"
+#include "can_communication.h"
 
 
-
+//only for debug
+static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 
 static char* enumStrings[] = {"left", "right", "up", "down", "neutral"}; 
 
@@ -187,17 +190,47 @@ static void ex4_oled_menu(){
 // test spi interface - send and read test byte
 // --------------------------------------------d
 void ex5_spi_init(){
-	ext_mem_init();
-	SPI_init();
-	char test = 0b00001011;
 
+	ext_mem_init();
+	
+
+	can_init();
+	data_t* message = malloc(sizeof(data_t));
+	data_t* receive;
+
+	message->id = 1;
+	message-> length = 5;
+	char* msg = "Hello";
+	for (int i = 0; i < message-> length; ++i)
+	{
+		message->data[i] = msg[i];
+	}
+
+	printf("Sending: %s\n", message->data );
+
+
+
+	stdout = &uart_stream;
+
+	
 	while(1){
 
-		SPI_send(test);
-		char val = SPI_read();
-		printf("val: %s\r\n", val);
+		if(can_send_message(message)){
+			printf("Error in sending messages\n");
+		}
+		else{
+			receive = can_receive_message();
+			if(receive != NULL){
+				printf("Message received: %s\n", receive->data);
+			}
+			else{
+				printf("Error in receiving message\n");
+			}
+		}
 
-		
+
+
+		_delay_ms(2000);
 	}
 
 }
@@ -219,7 +252,9 @@ int main(){
 
 	//ex5_can();
 
-	ex4_oled_menu();
+	//ex4_oled_menu();
+
+	ex5_spi_init();
 
 
 

@@ -4,7 +4,7 @@
 #include <avr/io.h>
 #include "common.h"
 
-void SPI_send(char data){
+void SPI_write(char data){
 
 	clear_bit(PORTB, PB4);
 

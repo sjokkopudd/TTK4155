@@ -6,7 +6,7 @@
 #include <avr/io.h>
 #include "common.h"
 
-#define THRESH_DIR 20
+#define THRESH_DIR 50
 
 #define INIT_POS 127
 
