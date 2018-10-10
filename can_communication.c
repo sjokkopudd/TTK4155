@@ -5,16 +5,23 @@
 #include "mcp_driver.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include "uart_driver.h"
+#include <stdio.h>
+
+static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 
 #define CAN_MAX_MESSAGE_LEN 8
 
 volatile uint8_t rx_flag = 0;
 
 ISR(INT0_vect){
-	//clear interrupt flag to open register buffer for new receive
-	mcp_bit_modify(MCP_CANINTF, 0x01, 0x00);
+	
 
 	rx_flag = 1;
+
+	stdout = &uart_stream;
+	printf("In ISR\r\n");
+
 
 }
 
@@ -56,6 +63,7 @@ void can_init(){
 // -----------------------------------------------------------------
 static uint8_t can_transmission_complete(){
 
+	
 	//check third bit TXREQ of MCP_TXB0CTRL register 
 	return !test_bit(mcp_read(MCP_TXB0CTRL), MCP_TXREQ);
 }
@@ -110,7 +118,8 @@ data_t* can_receive_message(){
 
 		rx_flag = 0;
 
-		
+		//clear interrupt flag to open register buffer for new receive
+		mcp_bit_modify(MCP_CANINTF, 0x01, 0x00);
 
 	}
 
@@ -119,3 +128,22 @@ data_t* can_receive_message(){
 
 
 }
+
+/*static int can_error(){
+	uint8_t error = mcp_read(MCP_TXB0CTRL);
+
+	//transmission detected error
+	if(test_bit(error, 4 )){
+		printf("Error in transmission\n");
+		return -1;
+	}
+
+	if(test_bit(error, MCP_TXMLOA)){
+		printf("Error in arbitration\n");
+		return -2;
+	}
+
+
+
+	return 0;
+}*/

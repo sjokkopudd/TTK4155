@@ -212,22 +212,55 @@ void ex5_spi_init(){
 
 	stdout = &uart_stream;
 
+	SPI_init();
+
+	/*//activate slave
+	clear_bit(PORTB, PB4);
+
+	//send message
+	SPI_write('c');
+
+
+	char data = SPI_read();
+
+	//deactivate slave
+	set_bit(PORTB, PB4);*/
+
 	
 	while(1){
 
-		if(can_send_message(message)){
-			printf("Error in sending messages\n");
+		/*if(can_send_message(message)){
+			printf("Error in sending messages\r\n");
 		}
 		else{
 			receive = can_receive_message();
 			if(receive != NULL){
-				printf("Message received: %s\n", receive->data);
+				for (int i = 0; i < receive->length; ++i)
+				{
+					printf("%s\r\n",receive->data[i]);
+				}
+				//printf("Message received: %s\n", receive->data);
+				printf("\r\n");
 			}
 			else{
-				printf("Error in receiving message\n");
+				printf("Error in receiving message\r\n");
 			}
-		}
+		}*/
+		
 
+		clear_bit(PORTB, PB4);
+
+
+		//send message
+		SPI_write(0b10101010);
+
+
+		char data = SPI_read();
+
+		//deactivate slave
+		set_bit(PORTB, PB4);
+
+		printf("data received: %d\r\n", data);
 
 
 		_delay_ms(2000);

@@ -165,6 +165,8 @@ Copyright 2003 Kimberly Otten Software Consulting
 #define MCP_TXB0DLC		0x35   //length
 #define MCP_TXB0D0		0x36   //first data byte
 
-
+//error flags that will be set in the MCP_TXB0CTRL in case of an error 
+#define MCP_TXERR 		0x04   //transmission error
+#define MCP_TXMLOA		0x05   //arbitration error
 
 #endif
