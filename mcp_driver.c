@@ -55,13 +55,13 @@ uint8_t mcp_init(uint8_t mode){
 	//send reset command
 	mcp_reset();
 
-	/*//self test -> after reset, the can controller
+	//self test -> after reset, the can controller
 	//has to be in configuration mode
 	value = mcp_read(MCP_CANSTAT);
 	if((value & MODE_MASK) != MODE_CONFIG){
 		printf("MCP2515 is NOT in configuration mode after reset\n");
 		return 1;
-	}*/
+	}
 
 	//change from configuration mode to specified mode
 	mcp_write(MCP_CANCTRL, mode);

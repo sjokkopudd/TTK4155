@@ -17,7 +17,7 @@ void can_init();
 
 uint8_t can_send_message(data_t* message);
 
-data_t* can_receive_message();
+int can_receive_message(data_t* message_to_receive);
 
 
 

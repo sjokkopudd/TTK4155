@@ -15,6 +15,7 @@
 #include "pinball_statemachine.h"
 #include "SPI_driver.h"
 #include "mcp_driver.h"
+#include "MCP2515.h"
 #include "can_communication.h"
 
 
@@ -196,59 +197,68 @@ void ex5_spi_init(){
 
 	can_init();
 	data_t* message = malloc(sizeof(data_t));
-	data_t* receive;
+	data_t* receive = malloc(sizeof(data_t));
 
 	message->id = 1;
 	message-> length = 5;
-	char* msg = "Hello";
-	for (int i = 0; i < message-> length; ++i)
-	{
-		message->data[i] = msg[i];
-	}
 
-	printf("Sending: %s\n", message->data );
-
-
+	
+	message->data[0] = 'H';
+	message->data[1] = 'a';
+	message->data[2] = 'l';
+	message->data[3] = 'l';
+	message->data[4] = 'o';
 
 	stdout = &uart_stream;
 
-	SPI_init();
-
-	/*//activate slave
-	clear_bit(PORTB, PB4);
-
-	//send message
-	SPI_write('c');
-
-
-	char data = SPI_read();
-
-	//deactivate slave
-	set_bit(PORTB, PB4);*/
+	
 
 	
 	while(1){
 
-		/*if(can_send_message(message)){
+	
+		for (int i = 0; i < message->length; ++i){
+			printf("%c", message->data[i]);	
+		}
+		printf("\r\n");
+
+		if(can_send_message(message)){
 			printf("Error in sending messages\r\n");
 		}
 		else{
-			receive = can_receive_message();
-			if(receive != NULL){
-				for (int i = 0; i < receive->length; ++i)
-				{
-					printf("%s\r\n",receive->data[i]);
+			_delay_ms(1000);
+			if(!can_receive_message(receive)){
+
+				printf("received message: ");
+				
+				for (int i = 0; i < receive->length; ++i){
+					printf("%c", receive->data[i]);	
 				}
-				//printf("Message received: %s\n", receive->data);
 				printf("\r\n");
 			}
+				
 			else{
 				printf("Error in receiving message\r\n");
 			}
-		}*/
+		}
+
+		//test mcp
+		/*for (int i = 0; i < message->length; i++) {
+			mcp_write( MCP_TXB0D0 + i, message->data[i]);
+		}
+
+
+
+		//read from that register
+		for (int i = 0; i < 5; ++i)
+		{
+			receive->data[i] = mcp_read(MCP_RXB0D0 + i);
+		}
+
+		printf("receive->data%s\n",receive->data )*/
 		
 
-		clear_bit(PORTB, PB4);
+		/*clear_bit(PORTB, PB4);
 
 
 		//send message
@@ -260,7 +270,7 @@ void ex5_spi_init(){
 		//deactivate slave
 		set_bit(PORTB, PB4);
 
-		printf("data received: %d\r\n", data);
+		printf("data received: %d\r\n", data);*/
 
 
 		_delay_ms(2000);

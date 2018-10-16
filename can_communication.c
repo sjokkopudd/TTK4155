@@ -20,7 +20,6 @@ ISR(INT0_vect){
 	rx_flag = 1;
 
 	stdout = &uart_stream;
-	printf("In ISR\r\n");
 
 
 }
@@ -70,6 +69,8 @@ static uint8_t can_transmission_complete(){
 
 uint8_t can_send_message(data_t* message){
 	
+	stdout = &uart_stream;
+
 	//check on transmission complete before sending new message
 	if(can_transmission_complete){
 
@@ -100,31 +101,37 @@ uint8_t can_send_message(data_t* message){
 
 
 
-data_t* can_receive_message(){
-	data_t* message = malloc(sizeof(data_t));
+int can_receive_message(data_t* message_to_receive){
 
+	
+	
 	//check interrupt flag
 	if(rx_flag){
+		
 		//get message id 
-		message->id = (mcp_read(MCP_RXB0SIDH) << 3 ) | (mcp_read(MCP_RXB0SIDL)>> 5);
+		message_to_receive->id = (mcp_read(MCP_RXB0SIDH) << 3 ) | (mcp_read(MCP_RXB0SIDL)>> 5);
 
 		//get message length
-		message->length = (0x0F) & mcp_read(MCP_RXB0DLC);
+		message_to_receive->length = (0x0F) & mcp_read(MCP_RXB0DLC);
+		
 
-		for (int i = 0; i < message->length; ++i)
+		for (int i = 0; i < message_to_receive->length; ++i)
 		{
-			message->data[i] = mcp_read(MCP_RXB0D0 + i);
+			message_to_receive->data[i] = mcp_read(MCP_RXB0D0 + i);
+
 		}
+
+
 
 		rx_flag = 0;
 
 		//clear interrupt flag to open register buffer for new receive
 		mcp_bit_modify(MCP_CANINTF, 0x01, 0x00);
 
+		return 0;
+
 	}
-
-
-	return message;
+	return 1;
 
 
 }
