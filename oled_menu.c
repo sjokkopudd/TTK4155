@@ -5,16 +5,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
-
-//#ifndef DEBUG
-//#define DEBUG
-//#endif
+#include "uart_driver.h"
+/*#ifndef DEBUG
+#define DEBUG
+#endif*/
 
 #ifndef DEBUG
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "joystick_driver.h"
-#include "uart_driver.h"
+
 #endif
 
 

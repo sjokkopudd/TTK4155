@@ -225,7 +225,7 @@ void ex5_spi_init(){
 		if(can_send_message(message)){
 			printf("Error in sending messages\r\n");
 		}
-		else{
+		/*else{
 			_delay_ms(1000);
 			if(!can_receive_message(receive)){
 
@@ -295,6 +295,7 @@ int main(){
 
 	//ex5_can();
 
+	//ex4_oled_first_steps();
 	//ex4_oled_menu();
 
 	ex5_spi_init();

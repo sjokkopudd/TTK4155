@@ -26,7 +26,7 @@ ISR(INT0_vect){
 
 void can_init(){
 
-	mcp_init(MODE_LOOPBACK);
+	mcp_init(MODE_NORMAL);
 
 	//disable global interrupts
 	cli();

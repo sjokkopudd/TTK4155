@@ -8,7 +8,9 @@
 #include "uart_driver.h"
 
 
-//#define DEBUG
+/*#ifndef DEBUG
+#define DEBUG
+#endif*/
 
 #define MINIMUM_DIFFICULTY 0
 #define MAXIMUM_DIFFICULTY 9
@@ -324,6 +326,8 @@ void PinballGameProcess(void){
 		printf("%s\n", testEventArray[currEvent]);
 	#endif
 	enCurrState = (* evtHndlTable[enCurrState][currEvent])();
+	
+	
 
 }
 
