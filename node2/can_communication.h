@@ -13,6 +13,16 @@ typedef struct data_t
 
 }data_t;
 
+typedef enum enMsgId
+{
+	eID_JOY_X = 0,
+	eID_JOY_Y = 1,
+	eID_BTN_RIGHT = 2,
+	eID_BTN_LEFT = 3,
+	eID_SLIDER_RIGHT = 4,
+	eID_SLIDER_LEFT = 5
+}enMsgId;
+
 void can_init();
 
 uint8_t can_send_message(data_t* message);

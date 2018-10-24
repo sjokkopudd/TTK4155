@@ -1,5 +1,7 @@
+
 #ifndef ADC_DRIVER_2_H
 #define ADC_DRIVER_2_H
+
 #include <stdint.h>
 
 void adc_2_init();

@@ -6,6 +6,9 @@
 #include <avr/interrupt.h>
 
 void adc_2_init(){
+	//enable adc
+	set_bit(ADCSRA, ADEN);
+
 	//Choose voltage reference AREF
 	clear_bit(ADMUX, REFS0);
 	clear_bit(ADMUX, REFS1);
@@ -17,25 +20,27 @@ void adc_2_init(){
 	clear_bit(ADMUX, MUX3);
 	clear_bit(ADMUX, MUX4);
 	clear_bit(ADCSRB, MUX5);
-	
-	//enable adc
-	set_bit(ADCSRA, ADEN);
 
+	set_bit(ADCSRA, ADPS2);
+	set_bit(ADCSRA, ADPS1);
+	set_bit(ADCSRA, ADPS0);
+	
+	
 	//set trigger mode, single conversions
 	clear_bit(ADCSRA, ADATE);
 }
 
 uint16_t get_IR_value(){
+
 	//start conversion
 	set_bit(ADCSRA, ADSC);
 
 	//wait for conversion to finish
-	while (ADSC){
-
+	while (test_bit(ADCSRA,ADSC)){
 	}
 
-	//read result
-	uint16_t result = ADC;
+	//return result
+	return ADC;
 }
 
 uint8_t check_collision(){

@@ -1,4 +1,4 @@
-#define F_CPU 16000000UL
+#define F_CPU 16000000
 
 
 #include "util/delay.h"
@@ -13,6 +13,9 @@
 #include "mcp_driver.h"
 #include "MCP2515.h"
 #include "can_communication.h"
+#include "PWM_driver.h"
+#include "adc_driver_2.h"
+#include "game_controller.h"
 
 
 //only for debug
@@ -123,15 +126,60 @@ void ex6_spi_init(){
 
 }
 
+
+void ex7_pwm_pulse(){
+	stdout = &uart_stream;
+	can_init();
+	init_game_controller();
+	int pos = 0;
+
+
+	while(1){
+		process_game();
+		
+
+	}
+
+
+}
+
+void ex7_ir_value(){
+	stdout = &uart_stream;
+	adc_2_init();
+
+
+
+	while(1){
+	
+		uint16_t irValue = get_IR_value();
+		//printf("irVal: %d\r\n", irValue);
+
+
+	}
+
+
+}
+
+
 int main(){
 	
 	unsigned long clock_speed = F_CPU;
 
 	uart_init(clock_speed);
+
+
+
+	//ex7_ir_value();
+
+
 	//ex6_uart_init();
 
 
-	ex6_spi_init();
+	//ex6_spi_init();
+
+	//printf("is changing pulse\r\n");
+
+	ex7_pwm_pulse();
 
 
 	return 0;
