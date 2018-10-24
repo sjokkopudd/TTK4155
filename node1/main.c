@@ -102,7 +102,7 @@ void ex2(){
 // --------------------------------------------------------
 // test joystick
 // -------------------------------------------------------
-void ex3_joystick(){
+/*void ex3_joystick(){
 
 
 	//test sram, adc and oled with the gal
@@ -148,7 +148,7 @@ void ex3_joystick(){
 		
 
 	}
-}
+}*/
 
 // -------------------------------------------
 // first steps with oled -> init, 
@@ -159,14 +159,19 @@ void ex4_oled_first_steps(){
 
 	ext_mem_init();
 
-	oled_init();
-
-	oled_goto_line(3);
-
-	oled_print("hello");
+	
 
 	while(1){
 	
+		oled_init();
+
+		oled_goto_line(3);
+
+		oled_print("hello");
+
+		_delay_ms(2000);
+
+
 	}
 
 	
@@ -177,6 +182,7 @@ void ex4_oled_first_steps(){
 // -------------------------------------------
 static void ex4_oled_menu(){
 	ext_mem_init();
+	can_init();
 
 	InitPinballGame();
 	
@@ -225,7 +231,7 @@ void ex5_spi_init(){
 		if(can_send_message(message)){
 			printf("Error in sending messages\r\n");
 		}
-		/*else{
+		else{
 			_delay_ms(1000);
 			if(!can_receive_message(receive)){
 
@@ -243,34 +249,12 @@ void ex5_spi_init(){
 		}
 
 		//test mcp
-		/*for (int i = 0; i < message->length; i++) {
+		for (int i = 0; i < message->length; i++) {
 			mcp_write( MCP_TXB0D0 + i, message->data[i]);
 		}
 
 
-
-		//read from that register
-		for (int i = 0; i < 5; ++i)
-		{
-			receive->data[i] = mcp_read(MCP_RXB0D0 + i);
-		}
-
-		printf("receive->data%s\n",receive->data )*/
 		
-
-		/*clear_bit(PORTB, PB4);
-
-
-		//send message
-		SPI_write(0b10101010);
-
-
-		char data = SPI_read();
-
-		//deactivate slave
-		set_bit(PORTB, PB4);
-
-		printf("data received: %d\r\n", data);*/
 
 
 		_delay_ms(2000);
@@ -288,7 +272,7 @@ int main(){
 
 	//ex1();
 	//joystick_calibrate();
-	//adc_init();
+	adc_init();
 
 	//ex2();
 	//ex4();
@@ -296,9 +280,9 @@ int main(){
 	//ex5_can();
 
 	//ex4_oled_first_steps();
-	//ex4_oled_menu();
+	ex4_oled_menu();
 
-	ex5_spi_init();
+	//ex5_spi_init();
 
 
 

@@ -107,6 +107,15 @@ joy_analog_pos joystick_get_analog_pos(uint8_t x, uint8_t y){
 }
 
 
+uint8_t joystick_get_x_pos(){
+	adc_channel_t CHANNEL;
+	CHANNEL = JOYSTICK_X;
+		
+	uint8_t x = adc_read_channel(CHANNEL);
+
+	return x;
+}
+
 //returns left slider position
 uint8_t get_slider_pos_left(void){
 
@@ -121,14 +130,15 @@ uint8_t get_slider_pos_right(void){
 
 }
 
-//returns button state
-uint8_t get_button(button_t button){
 
-	if(test_bit(PINB, button)){
-		return 1;
+button_t get_button(void){
+	if(test_bit(PINB, eBTN_RIGHT)){
+		return eBTN_RIGHT;
+	}
+	if(test_bit(PINB, eBTN_LEFT)){
+		return eBTN_LEFT;
 	}
 
-	return 0;
-
+	return eBTN_NO;
 }
 

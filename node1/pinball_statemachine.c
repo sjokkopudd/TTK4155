@@ -6,6 +6,7 @@
 #include "oled_driver.h"
 #include "string.h"
 #include "uart_driver.h"
+#include "can_communication.h"
 
 
 /*#ifndef DEBUG
@@ -22,8 +23,12 @@ static enStatePinball enCurrState;
 static enMenuLeaf enMenuCurrLeaf;
 static menu_t* currMenu;
 
+//message buffer for can
+static data_t* message;
+
+
 //only for debug
-//static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
+static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 
 // ---------------------------------------------------------------
 // events for debugging
@@ -52,56 +57,56 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 	{
 		//state idle
 		DoNothing,
-		EvtStartApplication,
+		DoNothing,
 		DoNothing,
 		DoNothing,
 		DoNothing,  
 		DoNothing, 
-		DoNothing,
+		EvtStartApplication,
 		DoNothing
 	},
 	{
 		//state menu 
-		EvtNavigateBack, 
-		EvtSelectMenuItem,
+		DoNothing, 
+		DoNothing,
 		EvtNavigateUp,
 		EvtNavigateDown,
 		DoNothing, 
-		DoNothing,
-		DoNothing,
+		EvtNavigateBack,
+		EvtSelectMenuItem,
 		DoNothing
 	},
 	{
 		//state diff
-		EvtExitLeaf,
+		DoNothing,
 		DoNothing,
 		EvtIncrementDiff, 
 		EvtDecrementDiff,
 		DoNothing, 
-		DoNothing, //TODO -> for actually playing
+		EvtExitLeaf, //TODO -> for actually playing
 		DoNothing, //TODO -> for actually playing
 		DoNothing
 
 	},
 	{
 		//state play
-		EvtExitLeaf,
+		DoNothing,
 		DoNothing,
 		DoNothing,
 		DoNothing,
 		DoNothing, 
+		EvtExitLeaf,
 		DoNothing,
-		DoNothing,
-		DoNothing
+		EvtControlServo
 	},
 	{
 		//state score
-		EvtExitLeaf,
+		DoNothing,
 		DoNothing,
 		DoNothing,
 		DoNothing,
 		DoNothing, 
-		DoNothing,
+		EvtExitLeaf,
 		DoNothing,
 		DoNothing
 	}
@@ -146,18 +151,45 @@ enStatePinball EvtNavigateBack(){
 
 }
 
+
+//-----------------------------------------------------
+// controlling servo -> sending x position of joystick
+// ----------------------------------------------------
+enStatePinball EvtControlServo(){
+	static uint8_t lstVal = 128;
+	stdout = &uart_stream;
+	
+	//getting current x position of joystick
+	uint8_t x = joystick_get_x_pos();
+
+	if((lstVal-x) > 5 || (x-lstVal)>5){
+		lstVal = x;
+		message->id = eID_JOY_X;
+		message->length = 1;
+		message->data[0] = x;
+
+		can_send_message(message);
+	}
+
+	return ePLAY;
+
+}
+
 //-----------------------------------------------------
 // select menu item
 // ----------------------------------------------------
 enStatePinball EvtSelectMenuItem(){
 	
 	enMenuLeaf currentLeaf = menuNavigationSelect();
+	stdout = &uart_stream;
+	printf("changing to pla\n");
 
 	switch(currentLeaf){
 		case eSET_DIFF: 
 			printDifficulty();
 			return eDIFF;
 		case eSTART_GAME:
+			
 			return ePLAY;
 		case eSEE_SCORE:
 			return eSCORE;
@@ -269,6 +301,9 @@ void InitPinballGame(){
 
 	oled_write_screen();
 
+	//send the postion via CAN to node 2
+	message = malloc(sizeof(data_t));
+
 	enCurrState = eIDLE;
 	
 }
@@ -281,10 +316,14 @@ void InitPinballGame(){
 
 enStateEvent GetEvent(){
 	static joy_direction_t lastDirection = eNEUTRAL;
+	static button_t lastBtn = eBTN_NO;
+
 	joy_direction_t currDirection;
+	button_t btn_input;
 
 
 	currDirection = joystick_get_direction();
+	btn_input = get_button();
 	
 	//do anything only if current directory is different from last
 	if(lastDirection != currDirection){
@@ -304,6 +343,17 @@ enStateEvent GetEvent(){
 			
 		}
 	}
+
+	if(lastBtn != btn_input){
+		lastBtn = btn_input;
+		switch(btn_input){
+			case eBTN_RIGHT:
+				return eBUTTON_RIGHT;
+			case eBTN_LEFT:
+				return eBUTTON_LEFT;
+		}
+	}
+
 
 	return eNO_EVENT;
 

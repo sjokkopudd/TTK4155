@@ -18,9 +18,9 @@ typedef enum{
 } joy_direction_t;
 
 typedef enum{
-	BTN_RIGHT = 0,
-	BTN_LEFT = 1,
-	BTN_JOY = 2
+	eBTN_RIGHT = 0,
+	eBTN_LEFT = 1,
+	eBTN_NO = 2
 } button_t;
 
 typedef struct Slider_Pos
@@ -37,8 +37,11 @@ void joystick_init(void);
 joy_direction_t joystick_get_direction();
 joy_analog_pos joystick_get_analog_pos(uint8_t x, uint8_t y);
 
+uint8_t joystick_get_x_pos();
+
 uint8_t get_slider_pos_left(void);
 
 uint8_t get_slider_pos_right(void);
 
-uint8_t get_button(button_t button);
+button_t get_button(void);
+

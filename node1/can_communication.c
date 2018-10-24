@@ -71,6 +71,7 @@ uint8_t can_send_message(data_t* message){
 	
 	stdout = &uart_stream;
 
+
 	//check on transmission complete before sending new message
 	if(can_transmission_complete){
 
