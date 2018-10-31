@@ -120,13 +120,13 @@ uint8_t joystick_get_x_pos(){
 uint8_t get_slider_pos_left(void){
 
 
-	return adc_read_channel(SLIDER_LEFT)*100/255;
+	return adc_read_channel(SLIDER_LEFT);
 
 }
 
 //returns right slider position
 uint8_t get_slider_pos_right(void){
-	return adc_read_channel(SLIDER_RIGHT)*100/255;
+	return adc_read_channel(SLIDER_RIGHT);
 
 }
 

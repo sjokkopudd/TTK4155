@@ -19,6 +19,7 @@
 #include "can_communication.h"
 
 
+
 //only for debug
 static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 
@@ -262,6 +263,17 @@ void ex5_spi_init(){
 
 }
 
+void test(){
+
+	uint8_t pos;
+	while(1){
+		pos = joystick_get_x_pos();
+		printf("slider position: %d\r\n", 6);
+
+	}
+	
+}
+
 int main(){
 	
 	unsigned long clock_speed = F_CPU;
@@ -284,9 +296,10 @@ int main(){
 
 	//ex5_spi_init();
 
+	//ex7_servo();
 
 
-
+	//test();
 
 	return 0;
 }

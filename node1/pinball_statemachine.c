@@ -156,20 +156,34 @@ enStatePinball EvtNavigateBack(){
 // controlling servo -> sending x position of joystick
 // ----------------------------------------------------
 enStatePinball EvtControlServo(){
-	static uint8_t lstVal = 128;
+	//static uint8_t lstVal = 128;
+	//(lstVal-x) > 5 || (x-lstVal)>5
 	stdout = &uart_stream;
 	
 	//getting current x position of joystick
 	uint8_t x = joystick_get_x_pos();
 
-	if((lstVal-x) > 5 || (x-lstVal)>5){
-		lstVal = x;
-		message->id = eID_JOY_X;
-		message->length = 1;
-		message->data[0] = x;
+	
+	//lstVal = x;
+	message->id = eID_JOY_X;
+	message->length = 1;
+	message->data[0] = x;
 
-		can_send_message(message);
-	}
+	can_send_message(message);
+	
+	
+	//getting right slider position and sending it over the CAN bus
+
+	uint8_t x_slider = get_slider_pos_right();
+	printf("slider pos: %d\n", x_slider);
+
+	message->id = eID_SLIDER_RIGHT;
+	message->length = 1;
+	message->data[0] = x_slider;
+
+	can_send_message(message);
+	
+
 
 	return ePLAY;
 
