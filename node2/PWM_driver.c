@@ -45,8 +45,8 @@ void generate_pulse_servo(int pos){
 
 	uint16_t pulse;
 
-	printf("MIN: %d\r\n", MIN_PULSE_SERVO);
-	printf("MAX: %d\r\n", MAX_PULSE_SERVO);
+	//printf("MIN: %d\r\n", MIN_PULSE_SERVO);
+	//printf("MAX: %d\r\n", MAX_PULSE_SERVO);
 	
 	//make sure that input is valid
 	if(pos < 0){
@@ -59,7 +59,6 @@ void generate_pulse_servo(int pos){
 	else{
 
 		//distribute position across servo range
-
 		pulse = MIN_PULSE_SERVO + ((double)pos/255) * (MAX_PULSE_SERVO - MIN_PULSE_SERVO);
 		
 	}
@@ -73,7 +72,7 @@ void generate_pulse_servo(int pos){
 	}
 
 
-	printf("pulse: %d\n", pulse );
+	//printf("pulse: %d\n", pulse );
 	
 
 	OCR1A = pulse;

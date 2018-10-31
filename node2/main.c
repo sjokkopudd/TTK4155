@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <avr/io.h>
+#include <avr/interrupt.h>
 
 
 #include "SPI_driver.h"
@@ -16,6 +17,9 @@
 #include "PWM_driver.h"
 #include "adc_driver_2.h"
 #include "game_controller.h"
+#include "TWI_Master.h"
+#include "dac_driver.h"
+#include "motor_driver.h"
 
 
 //only for debug
@@ -23,12 +27,11 @@ static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_W
 
 static char* enumStrings[] = {"left", "right", "up", "down", "neutral"}; 
 
+unsigned long clock_speed = F_CPU;
  
 void ex6_uart_init(){
 
-	unsigned long clock_speed = F_CPU;
-
-	uart_init(clock_speed);
+	//uart_init(clock_speed);
 
 	stdout = &uart_stream;
 
@@ -130,6 +133,7 @@ void ex6_spi_init(){
 void ex7_pwm_pulse(){
 	stdout = &uart_stream;
 	can_init();
+	dac_init();
 	init_game_controller();
 	int pos = 0;
 
@@ -143,6 +147,25 @@ void ex7_pwm_pulse(){
 
 }
 
+void ex7_test(){
+	stdout = &uart_stream;
+	can_init();
+	init_pwm();
+	int pos;
+
+	while(1){
+		pos = 0;
+		generate_pulse_servo(pos);
+		_delay_ms(2000);
+		pos = 127;
+		generate_pulse_servo(pos);
+		_delay_ms(2000);
+		pos = 255;
+		generate_pulse_servo(pos);
+		_delay_ms(2000);
+	}
+}
+
 void ex7_ir_value(){
 	stdout = &uart_stream;
 	adc_2_init();
@@ -151,15 +174,56 @@ void ex7_ir_value(){
 
 	while(1){
 	
-		uint16_t irValue = get_IR_value();
-		//printf("irVal: %d\r\n", irValue);
-
+		if (check_collision()){
+			printf("collision \r\n");
+		}
+		
+		_delay_ms(20);
 
 	}
 
 
 }
 
+void ex8_dac(){
+	dac_init();
+	unsigned char data;
+	while(1){
+		data = 0b00000000;
+		dac_send(data);
+		_delay_ms(2000);
+		data = 0b01111111;
+		dac_send(data);
+		_delay_ms(2000);
+		data = 0b11111111;
+		dac_send(data);
+		_delay_ms(2000);
+	}
+}
+
+void test() {
+	stdout = &uart_stream;
+	dac_init();
+	uint8_t val = 60;
+	while(1){
+		for (int i = 0; i < 255; i++){
+			update_motor(i);
+			_delay_ms(20);
+		}
+		/*val = 0
+		update_motor(val);
+		_delay_ms(2000);
+		val = 127;
+		update_motor(val);
+		_delay_ms(2000);
+		val = 255;
+		update_motor(val);
+		_delay_ms(2000);*/
+
+		/*unsigned char data = val;
+		printf("data: %d\n", data);*/
+	}
+}
 
 int main(){
 	
@@ -181,6 +245,10 @@ int main(){
 
 	ex7_pwm_pulse();
 
+	//ex7_test();
+
+	//ex8_dac();
+	//test();
 
 	return 0;
 }
