@@ -11,8 +11,9 @@ volatile uint8_t time = 0;
 //initialize 16bit timer/counter3 to count at increments of 20ms, and enable flag
 void timer_init(){
 
-	//enable global interrupts
-	sei();
+	printf("in init\r\n");
+	//disable global interrupts
+	cli();
 
 	//enable overflow interrupt
 	set_bit(TIMSK3, TOIE3);
@@ -23,6 +24,9 @@ void timer_init(){
 	set_bit(TCCR3B, WGM32);
 	set_bit(TCCR3B, WGM33);
 
+	//set output mode non-inverting
+	clear_bit(TCCR3A, COM3A0);
+	set_bit(TCCR3A, COM3A1);
 
 	//set clk prescalar fcpu/1024
 	set_bit(TCCR3B, CS30);
@@ -32,10 +36,14 @@ void timer_init(){
 	//set the counter to enable flag every 20ms
 	ICR3 = 1250;
 
+	
+
+	//enable global interrupts
+	sei();
+
 }
 
 ISR(TIMER3_OVF_vect){
-
+	printf("in timer interrupt\r\n");
 
 }
-

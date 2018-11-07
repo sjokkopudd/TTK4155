@@ -20,7 +20,8 @@
 #include "TWI_Master.h"
 #include "dac_driver.h"
 #include "motor_driver.h"
-
+#include "solenoid_driver.h"
+#include "timer.h"
 
 //only for debug
 static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
@@ -134,13 +135,16 @@ void ex7_pwm_pulse(){
 	stdout = &uart_stream;
 	can_init();
 	dac_init();
+	adc_2_init();
+	init_pwm();
 	init_game_controller();
+	solenoid_init();
+	motor_init();
 	int pos = 0;
 
 
 	while(1){
 		process_game();
-		
 
 	}
 
@@ -201,6 +205,24 @@ void ex8_dac(){
 	}
 }
 
+void test_timer(){
+	stdout = &uart_stream;
+	timer_init();
+
+	
+	while(1){
+
+	}
+}
+
+void test_encoder(){
+	stdout = &uart_stream;
+	motor_init();
+	while(1){
+		printf("encoder value: %d\r\n", get_encoder_value());
+	}
+}
+
 void test() {
 	stdout = &uart_stream;
 	dac_init();
@@ -243,7 +265,12 @@ int main(){
 
 	//printf("is changing pulse\r\n");
 
+	
+	//x7_pwm_pulse();
+	//ex7_ir_value();
+	//test_timer();
 	ex7_pwm_pulse();
+
 
 	//ex7_test();
 
