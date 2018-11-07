@@ -22,6 +22,7 @@
 #include "motor_driver.h"
 #include "solenoid_driver.h"
 #include "timer.h"
+#include "common.h"
 
 //only for debug
 static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
@@ -138,8 +139,8 @@ void ex7_pwm_pulse(){
 	adc_2_init();
 	init_pwm();
 	init_game_controller();
-	solenoid_init();
 	motor_init();
+	set_bit(DDRH, PH4);
 	int pos = 0;
 
 
@@ -223,6 +224,29 @@ void test_encoder(){
 	}
 }
 
+void test_motor(){
+	static data_t* receive;
+
+	dac_init();
+	can_init();
+	init_pwm();
+	motor_init();
+	while(1){
+		if(!can_receive_message(receive)){
+		uint8_t data;
+		switch(receive->id){
+
+			case eID_SLIDER_RIGHT:
+				data = receive->data[0];
+				update_motor(data);
+				break;
+		default: break;
+		}
+
+	}
+	}
+}
+
 void test() {
 	stdout = &uart_stream;
 	dac_init();
@@ -270,7 +294,7 @@ int main(){
 	//ex7_ir_value();
 	//test_timer();
 	ex7_pwm_pulse();
-
+	//test_motor();
 
 	//ex7_test();
 

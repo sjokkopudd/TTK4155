@@ -36,8 +36,6 @@ void timer_init(){
 	//set the counter to enable flag every 20ms
 	ICR3 = 1250;
 
-	
-
 	//enable global interrupts
 	sei();
 
