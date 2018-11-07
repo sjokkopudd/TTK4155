@@ -50,7 +50,8 @@ enMenuLeaf menuNavigationSelect(void);
 void highlightMenu(void);
 void updateDifficulty(uint8_t diff);
 void printDifficulty(void);
-
+void printPlayMode(void);
+void updateScore(uint16_t score);
 
 
 #endif
