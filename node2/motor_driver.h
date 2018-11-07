@@ -6,4 +6,6 @@ void motor_init();
 
 void update_motor(uint8_t val);
 
+uint16_t get_encoder_value();
+
 #endif
