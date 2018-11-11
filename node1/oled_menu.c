@@ -26,6 +26,9 @@
 
 
 #define MENU_HIGHLIGHT_INDENT 100
+#define PLAYER_HIGHLIGHT_INDENT 100
+#define PLAYER_SELECT_INDENT 80
+#define PLAYER_HIGHLIGHT_ROW_OFFSET 1
 #define MENU_PRINT_INDENT 10
 
 
@@ -37,6 +40,8 @@ static const char* STR_MENU_PLAY = "Play";
 static const char* STR_MENU_START = "Start";
 static const char* STR_MENU_SCORE= "Score";
 static const char* STR_MENU_DIFFICULTY= "Difficulty";
+static const char* STR_MENU_PLAYER= "Player";
+
 static const char* STR_MENU_MAIN = "Main Menu";
 static uint8_t currDifficulty = 0;
 
@@ -48,7 +53,7 @@ static uint8_t currDifficulty = 0;
 //-----------------------------------------------------------
 // create new menu item
 // ----------------------------------------------------------
-static menu_t * newMenuItem(menu_t* parent, const char* name){
+static menu_t * new_menu_item(menu_t* parent, const char* name){
 
 	menu_t * menu = malloc(sizeof(menu_t));
 
@@ -65,28 +70,28 @@ static menu_t * newMenuItem(menu_t* parent, const char* name){
 //-----------------------------------------------------------
 // add a sibling to a given menu item
 // ----------------------------------------------------------
-static menu_t * addSibling(menu_t* menu, const char* name){
+static menu_t * add_sibling(menu_t* menu, const char* name){
 	if (menu == NULL )
         return NULL;
 
     while (menu->sibling)
         menu = menu->sibling;
 
-    return (menu->sibling = newMenuItem(menu->parent, name));
+    return (menu->sibling = new_menu_item(menu->parent, name));
 }
 
 
 // ----------------------------------------------------------
 // add a child to given parent
 // ----------------------------------------------------------
-static menu_t * addChild(menu_t* parent, const char* name){
+static menu_t * add_child(menu_t* parent, const char* name){
 	if (parent == NULL)
         return NULL;
 
     if (parent->child)
-        return addSibling(parent->child, name);
+        return add_sibling(parent->child, name);
     else
-        return (parent->child = newMenuItem(parent,name));
+        return (parent->child = new_menu_item(parent,name));
 }
 
 // -----------------------------------------------------
@@ -97,10 +102,13 @@ static menu_t * addChild(menu_t* parent, const char* name){
 // as state changes in pinball_statemachine are only necessary if
 // events based on a leaf are triggered 
 // -----------------------------------------------------
-static enMenuLeaf getCurrentMenuLeaf(void){
+static enMenuLeaf get_current_menu_leaf(void){
 	//current selected menu item has no child -> is a leaf
 	//check which leaf and return corresponding value
-	if(currMenuSelected->menuItem->name == STR_MENU_DIFFICULTY){
+	if(currMenuSelected->menuItem->name == STR_MENU_PLAYER){
+		return eSEL_PLAYER;
+	}
+	else if(currMenuSelected->menuItem->name == STR_MENU_DIFFICULTY){
 		return eSET_DIFF;
 	}
 	else if(currMenuSelected->menuItem->name == STR_MENU_START){
@@ -118,7 +126,7 @@ static enMenuLeaf getCurrentMenuLeaf(void){
 // if the first menu item is selected, the last menu item will
 // be selected
 // ----------------------------------------------------------
-void menuNavigateUp(void){
+void oled_menu_navigate_up(void){
 	
 	//find left sibling of current menuitem
 	menu_t* ptr = currMenuSelected->menuItem->parent->child;
@@ -148,7 +156,7 @@ void menuNavigateUp(void){
 // ----------------------------------------------------------
 // select current menu and step deeper in menu hierarchy
 // ---------------------------------------------------------
-enMenuLeaf menuNavigationSelect(void){
+enMenuLeaf oled_menu_navigation_select(void){
 	//step deeper in hierarchiy only if child is available
 	if(currMenuSelected->menuItem->child != NULL){
 		currMenuSelected->menuItem = currMenuSelected->menuItem->child;
@@ -156,14 +164,14 @@ enMenuLeaf menuNavigationSelect(void){
 		currMenuSelected->row = 1;
 
 		//print new menu
-		printMenu();
+		oled_print_menu();
 
 		return eNOLEAF;
 	}
 
 	//there is no other child, so it has to be a leaf
 	//state change is needed
-	return getCurrentMenuLeaf();
+	return get_current_menu_leaf();
 	
 }
 
@@ -172,7 +180,7 @@ enMenuLeaf menuNavigationSelect(void){
 // ----------------------------------------------------------
 // select current menu and step deeper in menu hierarchy
 // ---------------------------------------------------------
-void menuNavigateBack(uint8_t isLeaf){ 	
+void oled_menu_navigate_back(uint8_t isLeaf){ 	
 
 	if(!isLeaf){
 		if(currMenuSelected->menuItem->parent != NULL && currMenuSelected->menuItem->parent!=mainMenu){
@@ -180,7 +188,7 @@ void menuNavigateBack(uint8_t isLeaf){
 		}
 	}
 	//print new menu
-	printMenu();
+	oled_print_menu();
 }
 
 // ----------------------------------------------------------
@@ -188,7 +196,7 @@ void menuNavigateBack(uint8_t isLeaf){
 // if the last menu item is selected, the first menu item will 
 // be selected 
 // ----------------------------------------------------------
-void menuNavigateDown(void){
+void oled_menu_navigate_down(void){
 	//navigate to right sibling
 	if(currMenuSelected->menuItem->sibling != NULL){
 		currMenuSelected->menuItem = currMenuSelected->menuItem->sibling;
@@ -205,7 +213,7 @@ void menuNavigateDown(void){
 // ---------------------------------------------------------
 // highlight current selected menu item 
 // ---------------------------------------------------------
-void highlightMenu(void){
+void oled_highlight_menu(void){
 	// remember old row to clean
 	static uint8_t idx_row = 1;
 	//TODO: add function to write to oled -> invert font color
@@ -231,7 +239,7 @@ void highlightMenu(void){
 // ---------------------------------------------------------
 // print menu starting at the current menu items parent 
 // ---------------------------------------------------------
-void printMenu(void){
+void oled_print_menu(void){
 
 	#ifndef DEBUG
 		oled_reset();
@@ -277,7 +285,7 @@ void printMenu(void){
 		}
 	}
 
-	highlightMenu();
+	oled_highlight_menu();
 	
 }
 
@@ -285,7 +293,7 @@ void printMenu(void){
 // -----------------------------------------------------------
 // menu initialization 
 // -----------------------------------------------------------
-void menuInit(void){
+void oled_menu_init(void){
 
 	//set selected menu item to main item 
 	//menuSel = eMENU_MAIN;
@@ -294,12 +302,13 @@ void menuInit(void){
 	//menu_t* start_screen = create_menu("Start Screen", NULL);
 
 	//create menu tree
-	mainMenu = newMenuItem(NULL, STR_MENU_MAIN);
-    menu_t* play = addChild(mainMenu, STR_MENU_PLAY);
-    addChild(play, STR_MENU_DIFFICULTY); // add sub menu difficulty to play menu
-    addChild(play, STR_MENU_START);		 // add sub menu start to play menu
+	mainMenu = new_menu_item(NULL, STR_MENU_MAIN);
+    menu_t* play = add_child(mainMenu, STR_MENU_PLAY);
+    add_child(play, STR_MENU_PLAYER);		 // add sub menu player to play menu
+    add_child(play, STR_MENU_DIFFICULTY); 	 // add sub menu difficulty to play menu
+    add_child(play, STR_MENU_START);		 // add sub menu start to play menu
 
-    addChild(mainMenu, STR_MENU_SCORE);	 // add score to main menu
+    add_child(mainMenu, STR_MENU_SCORE);	 // add score to main menu
 
     currMenuSelected = malloc(sizeof(currMenuSelected_t));
     currMenuSelected->menuItem = mainMenu->child;
@@ -309,7 +318,7 @@ void menuInit(void){
 
 }
 
-void printPlayMode(){
+void oled_print_play_mode(){
 	oled_reset();
 	oled_pos(0, 0); 
 	oled_print("Playing...");
@@ -318,7 +327,7 @@ void printPlayMode(){
 
 }
 
-void updateScore(uint16_t score){
+void oled_update_score(uint16_t score){
 	char str[2];
     sprintf(str, "%d",score);
 	oled_pos(4,0);
@@ -328,7 +337,7 @@ void updateScore(uint16_t score){
 //--------------------------------------------------------
 // prints difficulty to menu
 //--------------------------------------------------------
-void printDifficulty(void){
+void oled_print_difficulty(void){
 	#ifndef DEBUG
 		oled_pos(0, 0); 
 		oled_print("Set difficulty");
@@ -348,14 +357,14 @@ void printDifficulty(void){
 		printf("Diff = ");
 	#endif
 
-	updateDifficulty(currDifficulty);
+	oled_update_difficulty(currDifficulty);
 	
 }
 
 // ----------------------------------------------------
 // updates current difficulty in menu
 // ----------------------------------------------------
-void updateDifficulty(uint8_t diff){
+void oled_update_difficulty(uint8_t diff){
 	char str[2];
     sprintf(str, "%d",diff);
 
@@ -369,7 +378,65 @@ void updateDifficulty(uint8_t diff){
 	currDifficulty = diff;
 }
 
+// ---------------------------------------------------
+// prints all 4 player available
+// ---------------------------------------------------
+void oled_print_players(void){
+	oled_reset();
+	oled_pos(0,0);
+	oled_print("Select Player");
+	oled_pos(2,0);
+	oled_print("Player 1");
+	oled_pos(3,0);
+	oled_print("Player 2");
+	oled_pos(4,0);
+	oled_print("Player 3");
+	oled_pos(5,0);
+	oled_print("Player 4");
 
+	oled_highlight_player(1);
+}
+
+
+// --------------------------------------------------
+// highlight currently chosen player
+// --------------------------------------------------
+void oled_highlight_player(uint8_t player){
+	static uint8_t lastPlayer = 1;
+
+	if(lastPlayer != player){
+
+		//delete old position
+		oled_pos(lastPlayer+PLAYER_HIGHLIGHT_ROW_OFFSET, PLAYER_HIGHLIGHT_INDENT);
+		oled_print(" ");
+		lastPlayer = player;
+
+	}
+	
+    oled_pos(player+PLAYER_HIGHLIGHT_ROW_OFFSET, PLAYER_HIGHLIGHT_INDENT);
+    oled_print(">");
+
+}
+
+
+void oled_select_player(uint8_t player){
+	static uint8_t lastPlayer = 1;
+
+	if(lastPlayer != player){
+
+		//delete old position
+		oled_pos(lastPlayer+PLAYER_HIGHLIGHT_ROW_OFFSET, PLAYER_SELECT_INDENT);
+		oled_print(" ");
+		lastPlayer = player;
+
+	}
+	
+    oled_pos(player+PLAYER_HIGHLIGHT_ROW_OFFSET, PLAYER_SELECT_INDENT);
+    oled_print("*");
+
+
+
+}
 
 
 

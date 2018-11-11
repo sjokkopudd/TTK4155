@@ -19,8 +19,12 @@
 #define MINIMUM_DIFFICULTY 0
 #define MAXIMUM_DIFFICULTY 9
 
+#define LAST_PLAYER 4
+#define FIRST_PLAYER 1
+
 //variable for the difficulty: 0 lowest and 9 highest
 static uint8_t difficulty = 0;
+static uint8_t player = 1;
 
 static enStatePinball enCurrState;
 static enMenuLeaf enMenuCurrLeaf;
@@ -30,7 +34,7 @@ static menu_t* currMenu;
 static data_t* message;
 static data_t* receive;
 
-void initPosition(void);
+static void init_position(void);
 
 //only for debug
 static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
@@ -57,66 +61,83 @@ static const char* testEventArray[] = {"eJOYSTICK_LEFT", "eJOYSTICK_RIGHT", "eJO
 // states:
 //  eIDLE, 		//welcome screen on oled 
 //	eMENU, 		//select menu points
+//  ePLAYER,
 //	eDIFF, 		
 //	eSTART,
 //	eSCORE,	
 
+
+
+
+
 fPtr const evtHndlTable[][MAX_EVENTS] = {
 	{
 		//state idle
-		DoNothing,
-		DoNothing,
-		DoNothing,
-		DoNothing,
-		DoNothing,  
-		DoNothing, 
-		EvtStartApplication,
-		DoNothing
+		evt_do_nothing,
+		evt_do_nothing,
+		evt_do_nothing,
+		evt_do_nothing,
+		evt_do_nothing,  
+		evt_do_nothing, 
+		evt_start_application,
+		evt_do_nothing
 	},
 	{
 		//state menu 
-		DoNothing, 
-		DoNothing,
-		EvtNavigateUp,
-		EvtNavigateDown,
-		DoNothing, 
-		EvtNavigateBack,
-		EvtSelectMenuItem,
-		DoNothing
+		evt_do_nothing, 
+		evt_do_nothing,
+		evt_navigate_up,
+		evt_navigate_down,
+		evt_do_nothing, 
+		evt_navigate_back,
+		evt_select_menu_item,
+		evt_do_nothing
+	},
+	{
+		//state player
+		evt_do_nothing,
+		evt_do_nothing,
+		evt_decrement_player, 
+		evt_increment_player,
+		evt_do_nothing, 
+		evt_exit_leaf, 
+		evt_sel_player, 
+		evt_do_nothing
+
 	},
 	{
 		//state diff
-		DoNothing,
-		DoNothing,
-		EvtIncrementDiff, 
-		EvtDecrementDiff,
-		DoNothing, 
-		EvtExitLeaf, //TODO -> for actually playing
-		DoNothing, //TODO -> for actually playing
-		DoNothing
+		evt_do_nothing,
+		evt_do_nothing,
+		evt_increment_diff, 
+		evt_decrement_diff,
+		evt_do_nothing, 
+		evt_exit_leaf, //TODO -> for actually playing
+		evt_do_nothing, //TODO -> for actually playing
+		evt_do_nothing
 
 	},
 	{
 		//state play
-		DoNothing,
-		DoNothing,
-		DoNothing,
-		DoNothing,
-		DoNothing, 
-		EvtExitLeaf,
-		EvtShoot,
-		EvtControlServo
+		evt_do_nothing,
+		evt_do_nothing,
+		evt_do_nothing,
+		evt_do_nothing,
+		evt_do_nothing, 
+		evt_exit_leaf,
+		evt_shoot,
+		evt_control_servo
 	},
 	{
 		//state score
-		DoNothing,
-		DoNothing,
-		DoNothing,
-		DoNothing,
-		DoNothing, 
-		EvtExitLeaf,
-		DoNothing,
-		DoNothing
+		evt_do_nothing,
+		evt_do_nothing,
+		evt_do_nothing,
+		evt_do_nothing,
+		evt_do_nothing, 
+		evt_exit_leaf,
+		evt_do_nothing,
+		evt_do_nothing
 	}
 };
 
@@ -129,18 +150,18 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 //-----------------------------------------------------
 // DoNothing: returns current state
 // ----------------------------------------------------
-enStatePinball DoNothing(){
+enStatePinball evt_do_nothing(){
 	return enCurrState;
 }
 
 //-----------------------------------------------------
 // navigate from start screen to menu
 // ----------------------------------------------------
-enStatePinball EvtStartApplication(){
+enStatePinball evt_start_application(){
 
-	menuInit();
+	oled_menu_init();
 	//print menu to oled
-	printMenu();
+	oled_print_menu();
 
 	return eMENU;
 }
@@ -148,12 +169,12 @@ enStatePinball EvtStartApplication(){
 //-----------------------------------------------------
 // navigate from selected menu item to parent menu item
 // ----------------------------------------------------
-enStatePinball EvtNavigateBack(){
+enStatePinball evt_navigate_back(){
 
 	//call menu function to navigate back to parent
-	menuNavigateBack(0);
+	oled_menu_navigate_back(0);
 
-	highlightMenu();
+	oled_highlight_menu();
 
 	return eMENU;
 
@@ -162,7 +183,7 @@ enStatePinball EvtNavigateBack(){
 // ------------------------------------------------------
 // receives current score from node 2
 // -----------------------------------------------------
-static void getScore(){
+static void get_score(){
 	if(!can_receive_message(receive)){
 		switch(receive->id){
 			case eID_SCORE:
@@ -171,7 +192,7 @@ static void getScore(){
 			default: break;
 		}
 
-		updateScore(score);
+		oled_update_score(score);
 
 	}
 }
@@ -180,14 +201,12 @@ static void getScore(){
 // ----------------------------------------------------
 // shoot function for solenoid
 // ---------------------------------------------------
-enStatePinball EvtShoot(){
+enStatePinball evt_shoot(){
 	message->id = eID_BTN_RIGHT;
 	message->length = 1;
 	message->data[0] = 1;
 
 	can_send_message(message);
-
-	getScore();
 
 	return ePLAY;
 
@@ -195,7 +214,7 @@ enStatePinball EvtShoot(){
 //-----------------------------------------------------
 // controlling servo -> sending x position of joystick
 // ----------------------------------------------------
-enStatePinball EvtControlServo(){
+enStatePinball evt_control_servo(){
 	//static uint8_t lstVal = 128;
 	//(lstVal-x) > 5 || (x-lstVal)>5
 	
@@ -222,7 +241,7 @@ enStatePinball EvtControlServo(){
 	can_send_message(message);
 
 	
-	getScore();
+	get_score();
 
 
 	return ePLAY;
@@ -232,17 +251,20 @@ enStatePinball EvtControlServo(){
 //-----------------------------------------------------
 // select menu item
 // ----------------------------------------------------
-enStatePinball EvtSelectMenuItem(){
+enStatePinball evt_select_menu_item(){
 	
-	enMenuLeaf currentLeaf = menuNavigationSelect();
+	enMenuLeaf currentLeaf = oled_menu_navigation_select();
 
 	switch(currentLeaf){
+		case eSEL_PLAYER:
+			oled_print_players();
+			return ePLAYER;
 		case eSET_DIFF: 
-			printDifficulty();
+			oled_print_difficulty();
 			return eDIFF;
 		case eSTART_GAME:
-			initPosition();
-			printPlayMode();
+			init_position();
+			oled_print_play_mode();
 			return ePLAY;
 		case eSEE_SCORE:
 			//printHighScore();
@@ -256,13 +278,13 @@ enStatePinball EvtSelectMenuItem(){
 //-----------------------------------------------------
 // navigate to upper menu item
 // ----------------------------------------------------
-enStatePinball EvtNavigateUp(){
+enStatePinball evt_navigate_up(){
 	
 	//call function of oled_menu to navigate up
-	menuNavigateUp();
+	oled_menu_navigate_up();
 
 	//call function to highlight
-	highlightMenu();
+	oled_highlight_menu();
 
 
 	return eMENU;
@@ -272,31 +294,21 @@ enStatePinball EvtNavigateUp(){
 //-----------------------------------------------------
 // navigate to lower menu item
 // ----------------------------------------------------
-enStatePinball EvtNavigateDown(){
+enStatePinball evt_navigate_down(){
 	//call function of oled_menu to navigate down
-	menuNavigateDown();
+	oled_menu_navigate_down();
 
 	//call function to highlight selected item in oled
-	highlightMenu();
+	oled_highlight_menu();
 
 	return eMENU;
-}
-
-//TODO
-enStatePinball EvtDoAnythingWithLeftBtn(){
-	return ePLAY;
-}
-
-//TODO
-enStatePinball EvtDoAnythingWithRightBtn(){
-	return ePLAY;
 }
 
 
 // ---------------------------------------------
 // quit game: go from state ePLAY to eMENU
 // --------------------------------------------
-enStatePinball EvtExitLeaf(void){
+enStatePinball evt_exit_leaf(void){
 	//call navigation back with parameter 1 -> 
 	//indicates that this is called from a leaf state
 	//returning to underlying menu
@@ -305,9 +317,9 @@ enStatePinball EvtExitLeaf(void){
 	// 				 Difficulty
 	//				 Start
 	//
-	menuNavigateBack(1);
+	oled_menu_navigate_back(1);
 
-	highlightMenu();
+	oled_highlight_menu();
 
 	return eMENU;
 
@@ -317,14 +329,14 @@ enStatePinball EvtExitLeaf(void){
 // ---------------------------------------------
 // increment difficulty with Joystick up
 // ---------------------------------------------
-enStatePinball EvtIncrementDiff(void){
+enStatePinball evt_increment_diff(void){
 
 	if(difficulty < MAXIMUM_DIFFICULTY){
 		difficulty++;
 	}
 
 	// update in oled_menu
-	updateDifficulty(difficulty);
+	oled_update_difficulty(difficulty);
 
 	return eDIFF;
 }
@@ -333,22 +345,50 @@ enStatePinball EvtIncrementDiff(void){
 // ---------------------------------------------
 // decrement difficulty with Joystick down
 // ---------------------------------------------
-enStatePinball EvtDecrementDiff(void){
+enStatePinball evt_decrement_diff(void){
 	if(difficulty > MINIMUM_DIFFICULTY){
 		difficulty--;
 	}
 
 	// update in oled_menu
-	updateDifficulty(difficulty);
+	oled_update_difficulty(difficulty);
 
 	return eDIFF;
+}
+
+
+enStatePinball evt_increment_player(void){
+	if(player < LAST_PLAYER){
+		player++;
+	}
+	// update in oled_menu
+	oled_highlight_player(player);
+
+	return ePLAYER;
+}
+
+enStatePinball evt_decrement_player(void){
+	if(player > FIRST_PLAYER){
+		player--;
+	}
+	// update in oled_menu
+	oled_highlight_player(player);
+
+	return ePLAYER;
+}
+
+enStatePinball evt_sel_player(void){
+	oled_select_player(player);
+
+	return ePLAYER;
+
 }
 
 
 //--------------------------------------------------------
 // pinball game functions
 // -------------------------------------------------------
-void InitPinballGame(){
+void init_pinball_game(){
 
 	oled_init();
 
@@ -368,7 +408,7 @@ void InitPinballGame(){
 // ------------------------------------------------------
 
 
-enStateEvent GetEvent(){
+enStateEvent get_event(){
 	static joy_direction_t lastDirection = eNEUTRAL;
 	static button_t lastBtn = eBTN_NO;
 
@@ -380,8 +420,6 @@ enStateEvent GetEvent(){
 	btn_input = get_button();
 
 	if(lastBtn != btn_input){
-		stdout = &uart_stream;
-		printf("button pressed\r\n");
 		lastBtn = btn_input;
 		switch(btn_input){
 			case eBTN_RIGHT:
@@ -420,16 +458,15 @@ enStateEvent GetEvent(){
 // main pinball processs, gets current event and according
 // to state and event a state change is executed or not 
 // -----------------------------------------------------
-void PinballGameProcess(void){
+void pinball_game_process(void){
 	static uint8_t cnt = 0;
 	enStateEvent currEvent;
 	#ifndef DEBUG
-		currEvent = GetEvent();
+		currEvent = get_event();
 	#else
 		currEvent = debug_events[cnt];
 		cnt = (cnt +1)%5;
 		//function call, pointed to by current state and event (matrix)
-		printf("%s\n", testEventArray[currEvent]);
 	#endif
 	enCurrState = (* evtHndlTable[enCurrState][currEvent])();
 	_delay_ms(100);
@@ -442,23 +479,23 @@ void PinballGameProcess(void){
 // ------------------------------------------------------
 //print functions to oled
 // ------------------------------------------------------
-void printHighScore(uint16_t score){
+void print_high_score(uint16_t score){
 
 
 }
-void printAnimation(void* any/*any animation: enum*/){
+void print_animation(void* any/*any animation: enum*/){
 	
 }
-void printBestPlayers(void){
+void print_best_players(void){
 
 }
 
-void printInitScreen(void){
+void print_init_screen(void){
 
 }
 
 
-void updatePlayScreen(){
+void update_play_screen(){
 	//print oled score
 
 }
@@ -466,7 +503,7 @@ void updatePlayScreen(){
 // ------------------------------------------------------
 // sends initial start values for servo and motor
 // ------------------------------------------------------
-void initPosition(void){
+static void init_position(void){
 	uint8_t x_pos = 0;
 	uint8_t x_slider_pos = 0;
 

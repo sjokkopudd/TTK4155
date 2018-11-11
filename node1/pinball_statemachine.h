@@ -16,7 +16,8 @@
 // --------------------------------------------------------
 typedef enum enStatePinball {
 	eIDLE, 		//welcome screen on oled 
-	eMENU, 	//select menu points
+	eMENU, 	    //select menu points
+	ePLAYER,	//select player
 	eDIFF, 		//play game
 	ePLAY,
 	eSCORE,	//display highscores
@@ -46,34 +47,35 @@ typedef enStatePinball (*fPtr)(void);
 //--------------------------------------------------------
 // state machine functions
 // -------------------------------------------------------
-enStatePinball DoNothing(void);
-enStatePinball EvtStartApplication(void);
-enStatePinball EvtNavigateBack(void);
-enStatePinball EvtSelectMenuItem(void);
-enStatePinball EvtNavigateUp(void);
-enStatePinball EvtNavigateDown(void);
-enStatePinball EvtDoAnythingWithLeftBtn(void);
-enStatePinball EvtDoAnythingWithRightBtn(void);
-enStatePinball EvtExitLeaf(void);
-enStatePinball EvtIncrementDiff(void);
-enStatePinball EvtDecrementDiff(void);
-enStatePinball EvtControlServo(void);
-enStatePinball EvtShoot(void);
+enStatePinball evt_do_nothing(void);
+enStatePinball evt_start_application(void);
+enStatePinball evt_navigate_back(void);
+enStatePinball evt_select_menu_item(void);
+enStatePinball evt_navigate_up(void);
+enStatePinball evt_navigate_down(void);
+enStatePinball evt_exit_leaf(void);
+enStatePinball evt_increment_diff(void);
+enStatePinball evt_decrement_diff(void);
+enStatePinball evt_increment_player(void);
+enStatePinball evt_decrement_player(void);
+enStatePinball evt_sel_player(void);
+enStatePinball evt_control_servo(void);
+enStatePinball evt_shoot(void);
 
 //--------------------------------------------------------
 // pinball game functions
 // -------------------------------------------------------
-void InitPinballGame(void);
-enStateEvent GetEvent(void);
-void PinballGameProcess(void);
+void init_pinball_game(void);
+enStateEvent get_event(void);
+void pinball_game_process(void);
 
 // ------------------------------------------------------
 //print functions to oled
 // ------------------------------------------------------
-void printHighScore(uint16_t score);
-void printAnimation(void* any/*any animation: enum*/);
-void printBestPlayers(void);
-void printInitScreen(void);
+void print_high_score(uint16_t score);
+void print_animation(void* any/*any animation: enum*/);
+void print_best_players(void);
+void print_init_screen(void);
 
 
 

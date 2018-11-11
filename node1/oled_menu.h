@@ -29,6 +29,7 @@ typedef struct currMenuSelected
 // --------------------------------
 typedef enum enMenuLeaf
 {
+	eSEL_PLAYER,
 	eSET_DIFF,
 	eSTART_GAME,
 	eSEE_SCORE,
@@ -40,18 +41,24 @@ typedef enum enMenuLeaf
 //-------------------------------------------------------
 // functions that are called from pinball_statemachine
 //------------------------------------------------------
-void menuInit(void);
-void printMenu(void);
-void menuNavigateUp(void);
-void menuNavigateDown(void);
-void menuNavigateBack(uint8_t isLeaf);
-enMenuLeaf menuNavigationSelect(void);
+void oled_menu_init(void);
+void oled_print_menu(void);
+void oled_menu_navigate_up(void);
+void oled_menu_navigate_down(void);
+void oled_menu_navigate_back(uint8_t isLeaf);
 
-void highlightMenu(void);
-void updateDifficulty(uint8_t diff);
-void printDifficulty(void);
-void printPlayMode(void);
-void updateScore(uint16_t score);
+enMenuLeaf oled_menu_navigation_select(void);
+
+void oled_highlight_menu(void);
+void oled_update_difficulty(uint8_t diff);
+void oled_print_difficulty(void);
+void oled_print_play_mode(void);
+void oled_print_players(void);
+
+void oled_update_score(uint16_t score);
+void oled_print_players(void);
+void oled_highlight_player(uint8_t player);
+void oled_select_player(uint8_t player);
 
 
 #endif

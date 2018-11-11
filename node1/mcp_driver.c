@@ -63,7 +63,8 @@ uint8_t mcp_init(uint8_t mode){
 	//has to be in configuration mode
 	value = mcp_read(MCP_CANSTAT);
 	if((value & MODE_MASK) != MODE_CONFIG){
-		printf("MCP2515 is NOT in configuration mode after reset\n");
+		stdout = &uart_stream;
+	//	printf("MCP2515 is NOT in configuration mode after reset\n");
 		return 1;
 	}
 
@@ -73,7 +74,8 @@ uint8_t mcp_init(uint8_t mode){
 	//check if the can controller is in correct mode
 	value  = mcp_read(MCP_CANSTAT);
 	if((value & MODE_MASK) != mode){
-		printf("MCP2515 is NOT in correct mode after reset\n");
+		stdout = &uart_stream;
+	//	printf("MCP2515 is NOT in correct mode after reset\n");
 		return 1;
 	}
 

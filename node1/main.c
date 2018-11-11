@@ -159,7 +159,7 @@ void ex2(){
 void ex4_oled_first_steps(){
 
 	ext_mem_init();
-
+	
 	
 
 	while(1){
@@ -185,11 +185,11 @@ static void ex4_oled_menu(){
 	ext_mem_init();
 	can_init();
 
-	InitPinballGame();
+	init_pinball_game();
 	
 	while(1){
 
-		PinballGameProcess();
+		pinball_game_process();
 	}
 }
 
