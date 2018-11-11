@@ -96,7 +96,7 @@ void encoder_reset(){
 	}*/
 
 	dac_send(data);
-	_delay_ms(1500);
+	_delay_ms(1000);
 	MIN = get_encoder_value();
 	_delay_us(100);
 
@@ -113,7 +113,7 @@ void encoder_reset(){
 =======
 	}*/
 	dac_send(data);
-	_delay_ms(1500);
+	_delay_ms(1000);
 	MAX = get_encoder_value();
 	_delay_us(100);
 	dac_send(0);

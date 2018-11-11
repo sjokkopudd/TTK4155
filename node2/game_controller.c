@@ -62,7 +62,7 @@ void process_game(){
 				data = receive->data[0];
 				//printf("data: %d\r\n", data);
 				//update_motor(data);
-				printf("16bit val: %u\r\n", convert_to_16bit(data));
+				update_position(data);
 				break;
 			
 			case eID_BTN_RIGHT:

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <avr/io.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <avr/interrupt.h>
 #include "motor_driver.h"
 
@@ -49,6 +50,7 @@ void timer_init(){
 
 ISR(TIMER3_OVF_vect){
 	sampled_encoder_value = get_encoder_value();
+	//printf("sampled_encoder_value: %u\r\n", sampled_encoder_value);
 	discrete_PI_controller();
 	//time += 20;
 }
@@ -62,16 +64,24 @@ void discrete_PI_controller(){
 	uint8_t error = target_value - convert_encoder_to_8bit(sampled_encoder_value);
 	integration_value += error;
 
-	uint16_t output = K_p*error + T*K_i*integration_value;
+	uint8_t output = K_p*error + T*K_i*integration_value;
 
-	printf("u: %u\r\n", output);
+	//printf("u: %d\r\n", output);
 }
 
 
 uint8_t convert_encoder_to_8bit(uint16_t value){
 	uint16_t normalized_value = value - get_MIN();
+	//printf("normalized_value: %d\r\n", normalized_value);
 	uint16_t interval = get_MAX()-get_MIN();
-	int increment = 255/interval;
-	uint8_t result = normalized_value*increment;
-	return result;  
+	//printf("interval: %d\r\n", interval);
+	double increment = 255./interval;
+	//printf("increment: %d\r\n", increment);
+	double result = normalized_value*increment;
+	printf("increment: %f\r\n", increment);
+
+//	uint8_t result1 = (uint8_t)((normalized_value*255)./interval);
+	//printf("result1: %d\r\n", result1);
+
+	return result; 
 }
