@@ -58,6 +58,7 @@ enStatePinball EvtExitLeaf(void);
 enStatePinball EvtIncrementDiff(void);
 enStatePinball EvtDecrementDiff(void);
 enStatePinball EvtControlServo(void);
+enStatePinball EvtShoot(void);
 
 //--------------------------------------------------------
 // pinball game functions

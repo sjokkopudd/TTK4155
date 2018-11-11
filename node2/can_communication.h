@@ -20,7 +20,9 @@ typedef enum enMsgId
 	eID_BTN_RIGHT = 2,
 	eID_BTN_LEFT = 3,
 	eID_SLIDER_RIGHT = 4,
-	eID_SLIDER_LEFT = 5
+	eID_SLIDER_LEFT = 5, 
+	eID_SCORE = 6,
+	eID_RESET = 7
 }enMsgId;
 
 void can_init();

@@ -1,3 +1,4 @@
+#define F_CPU 4915200
 #include "pinball_statemachine.h"
 #include "oled_menu.h"
 #include "joystick_driver.h"
@@ -7,6 +8,8 @@
 #include "string.h"
 #include "uart_driver.h"
 #include "can_communication.h"
+
+#include "util/delay.h"
 
 
 /*#ifndef DEBUG
@@ -25,10 +28,15 @@ static menu_t* currMenu;
 
 //message buffer for can
 static data_t* message;
+static data_t* receive;
 
+void initPosition(void);
 
 //only for debug
 static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
+
+static uint16_t score = 0;
+
 
 // ---------------------------------------------------------------
 // events for debugging
@@ -96,7 +104,7 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 		DoNothing,
 		DoNothing, 
 		EvtExitLeaf,
-		DoNothing,
+		EvtShoot,
 		EvtControlServo
 	},
 	{
@@ -151,14 +159,45 @@ enStatePinball EvtNavigateBack(){
 
 }
 
+// ------------------------------------------------------
+// receives current score from node 2
+// -----------------------------------------------------
+static void getScore(){
+	if(!can_receive_message(receive)){
+		switch(receive->id){
+			case eID_SCORE:
+				score = receive->data[0] + (receive->data[1] << 8);
+				break;
+			default: break;
+		}
 
+		updateScore(score);
+
+	}
+}
+
+
+// ----------------------------------------------------
+// shoot function for solenoid
+// ---------------------------------------------------
+enStatePinball EvtShoot(){
+	message->id = eID_BTN_RIGHT;
+	message->length = 1;
+	message->data[0] = 1;
+
+	can_send_message(message);
+
+	getScore();
+
+	return ePLAY;
+
+}
 //-----------------------------------------------------
 // controlling servo -> sending x position of joystick
 // ----------------------------------------------------
 enStatePinball EvtControlServo(){
 	//static uint8_t lstVal = 128;
 	//(lstVal-x) > 5 || (x-lstVal)>5
-	stdout = &uart_stream;
 	
 	//getting current x position of joystick
 	uint8_t x = joystick_get_x_pos();
@@ -175,14 +214,15 @@ enStatePinball EvtControlServo(){
 	//getting right slider position and sending it over the CAN bus
 
 	uint8_t x_slider = get_slider_pos_right();
-	printf("slider pos: %d\n", x_slider);
 
 	message->id = eID_SLIDER_RIGHT;
 	message->length = 1;
 	message->data[0] = x_slider;
 
 	can_send_message(message);
+
 	
+	getScore();
 
 
 	return ePLAY;
@@ -195,17 +235,17 @@ enStatePinball EvtControlServo(){
 enStatePinball EvtSelectMenuItem(){
 	
 	enMenuLeaf currentLeaf = menuNavigationSelect();
-	stdout = &uart_stream;
-	printf("changing to pla\n");
 
 	switch(currentLeaf){
 		case eSET_DIFF: 
 			printDifficulty();
 			return eDIFF;
 		case eSTART_GAME:
-			
+			initPosition();
+			printPlayMode();
 			return ePLAY;
 		case eSEE_SCORE:
+			//printHighScore();
 			return eSCORE;
 		case eNOLEAF:
 			return eMENU;
@@ -274,7 +314,6 @@ enStatePinball EvtExitLeaf(void){
 }
 
 
-
 // ---------------------------------------------
 // increment difficulty with Joystick up
 // ---------------------------------------------
@@ -317,6 +356,7 @@ void InitPinballGame(){
 
 	//send the postion via CAN to node 2
 	message = malloc(sizeof(data_t));
+	receive = malloc(sizeof(data_t));
 
 	enCurrState = eIDLE;
 	
@@ -338,6 +378,18 @@ enStateEvent GetEvent(){
 
 	currDirection = joystick_get_direction();
 	btn_input = get_button();
+
+	if(lastBtn != btn_input){
+		stdout = &uart_stream;
+		printf("button pressed\r\n");
+		lastBtn = btn_input;
+		switch(btn_input){
+			case eBTN_RIGHT:
+				return eBUTTON_RIGHT;
+			case eBTN_LEFT:
+				return eBUTTON_LEFT;
+		}
+	}
 	
 	//do anything only if current directory is different from last
 	if(lastDirection != currDirection){
@@ -355,16 +407,6 @@ enStateEvent GetEvent(){
 			case eNEUTRAL:
 				return eJOYSTICK_NEUTRAL;
 			
-		}
-	}
-
-	if(lastBtn != btn_input){
-		lastBtn = btn_input;
-		switch(btn_input){
-			case eBTN_RIGHT:
-				return eBUTTON_RIGHT;
-			case eBTN_LEFT:
-				return eBUTTON_LEFT;
 		}
 	}
 
@@ -390,6 +432,8 @@ void PinballGameProcess(void){
 		printf("%s\n", testEventArray[currEvent]);
 	#endif
 	enCurrState = (* evtHndlTable[enCurrState][currEvent])();
+	_delay_ms(100);
+
 	
 	
 
@@ -410,6 +454,43 @@ void printBestPlayers(void){
 }
 
 void printInitScreen(void){
+
+}
+
+
+void updatePlayScreen(){
+	//print oled score
+
+}
+
+// ------------------------------------------------------
+// sends initial start values for servo and motor
+// ------------------------------------------------------
+void initPosition(void){
+	uint8_t x_pos = 0;
+	uint8_t x_slider_pos = 0;
+
+	message->id = eID_JOY_X;
+	message->length = 1;
+	message->data[0] = x_pos;
+
+	can_send_message(message);
+
+	_delay_ms(50);
+
+	message->id = eID_SLIDER_RIGHT;
+	message->length = 1;
+	message->data[0] = x_slider_pos;
+
+	can_send_message(message);
+
+	_delay_ms(50);
+
+	//reset scores
+	message->id = eID_RESET;
+	can_send_message(message);
+
+	_delay_ms(50);
 
 }
 

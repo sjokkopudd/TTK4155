@@ -308,6 +308,23 @@ void menuInit(void){
 
 
 }
+
+void printPlayMode(){
+	oled_reset();
+	oled_pos(0, 0); 
+	oled_print("Playing...");
+	oled_pos(2, 0); 
+	oled_print("Score:");
+
+}
+
+void updateScore(uint16_t score){
+	char str[2];
+    sprintf(str, "%d",score);
+	oled_pos(4,0);
+	oled_print(str);
+}
+
 //--------------------------------------------------------
 // prints difficulty to menu
 //--------------------------------------------------------

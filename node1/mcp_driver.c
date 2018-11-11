@@ -8,6 +8,10 @@
 #include "MCP2515.h"
 #include <stdio.h>
 #include "util/delay.h"
+#include "uart_driver.h"
+
+//only for debug
+static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 // -------------------------------------------
 // activate slave by setting ss bit low
 // -------------------------------------------
@@ -48,7 +52,7 @@ uint8_t mcp_read(uint8_t address){
 
 uint8_t mcp_init(uint8_t mode){
 	uint8_t value;
-
+	stdout = &uart_stream;
 	//initialize SPI
 	SPI_init();
 
