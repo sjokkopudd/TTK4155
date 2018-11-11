@@ -17,4 +17,8 @@ uint16_t convert_to_16bit(uint8_t slider_pos);
 
 uint16_t get_current_position();
 
+uint16_t get_MAX();
+
+uint16_t get_MIN();
+
 #endif

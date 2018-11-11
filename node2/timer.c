@@ -69,8 +69,8 @@ void discrete_PI_controller(){
 
 
 uint8_t convert_encoder_to_8bit(uint16_t value){
-	uint16_t normalized_value = value - MIN;
-	uint16_t interval = MAX-MIN;
+	uint16_t normalized_value = value - get_MIN();
+	uint16_t interval = get_MAX()-get_MIN();
 	int increment = 255/interval;
 	uint8_t result = normalized_value*increment;
 	return result;  
