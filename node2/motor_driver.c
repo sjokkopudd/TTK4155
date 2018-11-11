@@ -15,6 +15,8 @@
 #define K_i 1
 #define T 0.02
 
+static uint8_t MAX;
+static uint8_t MIN;
 
 void motor_init(){
 	//enable motor
@@ -28,11 +30,8 @@ void motor_init(){
 	set_bit(PORTH, PH6);
 }
 
-<<<<<<< HEAD
 void update_motor(uint8_t val){
-=======
-void update_motor(uint8_t pos){
->>>>>>> 13f9c942b72a376457979d82d1c0d154004a009c
+
 	/*if (val > (128 + DEAD_ZONE)){
 
 		//set direction
@@ -57,14 +56,7 @@ void update_motor(uint8_t pos){
 		//printf("under voltage\r\n");
 		dac_send(0b0);
 	}*/
-<<<<<<< HEAD
-=======
 
-	uint8_t output = K_p*(pos - )
-
-
-
->>>>>>> 13f9c942b72a376457979d82d1c0d154004a009c
 }
 
 uint16_t get_encoder_value(){
@@ -87,4 +79,32 @@ uint16_t get_encoder_value(){
 	//combine to 16bit output
 	uint16_t result = ((uint16_t)high << 8) | low;
 	return result;
+}
+
+void encoder_reset(){
+	//drive the motor to both ends
+	uint8_t data;
+	// right
+	uint8_t counter = 0;
+	data = 100;
+	clear_bit(DDRH, PH1);
+	while(counter < 10000){
+		dac_send(data);
+		counter ++;
+	}
+	MIN = get_encoder_value();
+	_delay_us(100);
+
+	// left
+	uint8_t counter = 0;
+	data = 100;
+	set_bit(DDRH, PH1);
+	while(counter < 10000){
+		dac_send(data);
+		counter ++;
+	}
+	MIN = get_encoder_value();	
+
+	printf("MAX: %d\r\n", MAX);
+	printf("MIN: %d\r\n", MIN);
 }

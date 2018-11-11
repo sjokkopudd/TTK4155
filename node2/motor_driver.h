@@ -4,6 +4,8 @@
 
 void motor_init();
 
+void encoder_reset();
+
 void update_motor(uint8_t val);
 
 uint16_t get_encoder_value();
