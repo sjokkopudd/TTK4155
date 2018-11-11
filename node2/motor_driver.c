@@ -103,7 +103,19 @@ void encoder_reset(){
 		dac_send(data);
 		counter ++;
 	}
-	MIN = get_encoder_value();	
+	MIN = get_encoder_value();
+
+	//make sure that we don't get overflow error
+	if (MAX < MIN){
+		//drive the motor a little while letting the thread glide over the driveshaft 
+		//in order to push the encoder to new values not in overflow range.
+		while(counter < 15){
+		dac_send(200);
+		counter ++;
+		}
+		//try again
+		encoder_reset();
+	}	
 
 	printf("MAX: %d\r\n", MAX);
 	printf("MIN: %d\r\n", MIN);
