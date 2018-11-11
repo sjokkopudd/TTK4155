@@ -1,10 +1,13 @@
 
 #include "graphic.h"
 
+//play a 8x8 sorite at given row and column
+void play_sprite(uint8_t col, uint8_t row){
+	
+}
 
 
-
-
+//functions to convert piskel graphic to required format from here on out
 void convert_to_format (const uint32_t matrix[1][8192], unsigned char output_matrix[128][8]) {
 
 	FILE *output_file = fopen("pinball.txt", "w"); //this is to write to file output.

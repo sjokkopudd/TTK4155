@@ -4,8 +4,9 @@
 #include <avr/io.h>
 #include <stdint.h>
 #include <avr/interrupt.h>
+#include "motor_driver.h"
 
-volatile uint8_t integration_value = 0;
+volatile uint8_t encoder_value = 0;
 volatile uint8_t time = 0;
 
 //initialize 16bit timer/counter3 to count at increments of 20ms, and enable flag
@@ -35,7 +36,15 @@ void timer_init(){
 }
 
 ISR(TIMER3_OVF_vect){
-
-
+	encoder_value = get_encoder_value();
+	//PI_controller();
+	time += 20;
 }
 
+uint8_t get_time(){
+	return time;
+}
+
+uint8_t get_integration_value(){
+	return encoder_value;
+}

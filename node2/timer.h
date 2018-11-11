@@ -2,7 +2,7 @@
 #define TIMER_H
 
 void timer_init();
-void ingame_timer();
-void PI_controller();
+uint8_t get_time();
+uint8_t get_integration_value();
 
 #endif

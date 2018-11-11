@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <avr/interrupt.h>
 #include "util/delay.h"
+#include "timer.h"
 
 #define DEAD_ZONE 40
 
@@ -18,7 +19,7 @@ void motor_init(){
 }
 
 void update_motor(uint8_t val){
-	if (val > (128 + DEAD_ZONE)){
+	/*if (val > (128 + DEAD_ZONE)){
 
 		//set direction
 		clear_bit(DDRH, PH1);
@@ -41,7 +42,7 @@ void update_motor(uint8_t val){
 	else{
 		printf("under voltage\r\n");
 		dac_send(0b0);
-	}
+	}*/
 }
 
 uint16_t get_encoder_value(){
