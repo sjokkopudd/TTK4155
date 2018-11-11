@@ -11,12 +11,10 @@
 #include "timer.h"
 
 #define DEAD_ZONE 40
-#define K_p 1
-#define K_i 1
-#define T 0.02
 
 static uint8_t MAX;
 static uint8_t MIN;
+volatile uint16_t current_position;
 
 void motor_init(){
 	//enable motor
@@ -56,7 +54,10 @@ void update_motor(uint8_t val){
 		//printf("under voltage\r\n");
 		dac_send(0b0);
 	}*/
+}
 
+void update_position(uint8_t pos){
+	current_position = convert_to_16bit(pos);
 }
 
 uint16_t get_encoder_value(){
@@ -105,6 +106,9 @@ void encoder_reset(){
 	}
 	MIN = get_encoder_value();
 
+	printf("MAX: %d\r\n", MAX);
+	printf("MIN: %d\r\n", MIN);
+
 	//make sure that we don't get overflow error
 	if (MAX < MIN){
 		//drive the motor a little while letting the thread glide over the driveshaft 
@@ -116,9 +120,6 @@ void encoder_reset(){
 		//try again
 		encoder_reset();
 	}	
-
-	printf("MAX: %d\r\n", MAX);
-	printf("MIN: %d\r\n", MIN);
 }
 
 uint16_t convert_to_16bit(uint8_t slider_pos){
@@ -126,4 +127,8 @@ uint16_t convert_to_16bit(uint8_t slider_pos){
 	uint16_t increment = interval/255;
 	uint16_t result = MIN + slider_pos*increment;
 	return result;  
+}
+
+uint16_t get_current_position(){
+	return current_position;
 }

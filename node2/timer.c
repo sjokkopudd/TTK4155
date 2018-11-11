@@ -6,8 +6,13 @@
 #include <avr/interrupt.h>
 #include "motor_driver.h"
 
-volatile uint8_t encoder_value = 0;
-volatile uint8_t time = 0;
+#define K_p 1
+#define K_i 1
+#define T 0.02
+
+volatile uint16_t sampled_encoder_value = 0;
+//volatile uint8_t time = 0;
+volatile uint16_t integration_value = 0;
 
 //initialize 16bit timer/counter3 to count at increments of 20ms, and enable flag
 void timer_init(){
@@ -43,17 +48,21 @@ void timer_init(){
 }
 
 ISR(TIMER3_OVF_vect){
-	encoder_value = get_encoder_value();
-	//PI_controller();
-	time += 20;
+	sampled_encoder_value = get_encoder_value();
+	discrete_PI_controller();
+	//time += 20;
 }
 
-uint8_t get_time(){
+/*uint8_t get_time(){
 	return time;
-}
+}*/
 
-uint8_t get_integration_value(){
-	return encoder_value;
+void discrete_PI_controller(){
+	uint16_t target_value = get_current_position();
+	uint16_t error = target_value - sampled_encoder_value;
+	integration_value += error;
+
+	uint16_t output = K_p*error + T*K_i*integration_value;
 }
 
 

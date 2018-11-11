@@ -4,6 +4,8 @@
 
 void timer_init();
 uint8_t get_time();
-uint8_t get_integration_value();
+
+void discrete_PI_controller();
+
 
 #endif

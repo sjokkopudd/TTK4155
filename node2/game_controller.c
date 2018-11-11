@@ -57,6 +57,7 @@ void process_game(){
 			case eID_SLIDER_RIGHT:
 				data = receive->data[0];
 				update_motor(data);
+				update_position(data);
 				break;
 			
 			case eID_BTN_RIGHT:
