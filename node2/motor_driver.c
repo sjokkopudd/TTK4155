@@ -12,8 +12,8 @@
 
 #define DEAD_ZONE 40
 
-static uint8_t MAX;
-static uint8_t MIN;
+static uint16_t MAX;
+static uint16_t MIN;
 volatile uint16_t current_position = 0;
 
 void motor_init(){
@@ -89,10 +89,13 @@ void encoder_reset(){
 	uint8_t counter = 0;
 	data = 100;
 	clear_bit(DDRH, PH1);
-	while(counter < 50){
+	/*while(counter < 50){
 		dac_send(data);
 		counter ++;
-	}
+	}*/
+
+	dac_send(data);
+	_delay_ms(1500);
 	MIN = get_encoder_value();
 	_delay_us(100);
 
@@ -100,23 +103,27 @@ void encoder_reset(){
 	counter = 0;
 	data = 100;
 	set_bit(DDRH, PH1);
-	while(counter < 50){
+	/*while(counter < 50){
 		dac_send(data);
 		counter ++;
-	}
-	MIN = get_encoder_value();
+	}*/
+	dac_send(data);
+	_delay_ms(1500);
+	MAX = get_encoder_value();
+	_delay_us(100);
+	dac_send(0);
 
-	printf("MAX: %d\r\n", MAX);
-	printf("MIN: %d\r\n", MIN);
+	printf("MAX: %u\r\n", MAX);
+	printf("MIN: %u\r\n", MIN);
 
 	//make sure that we don't get overflow error
 	if (MAX < MIN){
 		//drive the motor a little while letting the thread glide over the driveshaft 
 		//in order to push the encoder to new values not in overflow range.
-		while(counter < 15){
+		/*while(counter < 15){
 		dac_send(200);
 		counter ++;
-		}
+		}*/
 		//try again
 		encoder_reset();
 	}	

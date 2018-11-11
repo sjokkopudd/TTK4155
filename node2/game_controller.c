@@ -44,6 +44,10 @@ void init_game_controller(){
 // according to the message ids
 // -------------------------------------------------------------------
 void process_game(){
+	//message id and length for sending the score
+	message->id = eID_SCORE;
+	message->length = 2;
+
 
 	//buffer for receiving data via can
 	if(!can_receive_message(receive)){
@@ -56,8 +60,9 @@ void process_game(){
 				break;
 			case eID_SLIDER_RIGHT:
 				data = receive->data[0];
-				update_motor(data);
-				update_position(data);
+				//printf("data: %d\r\n", data);
+				//update_motor(data);
+				printf("16bit val: %u\r\n", convert_to_16bit(data));
 				break;
 			
 			case eID_BTN_RIGHT:
@@ -67,26 +72,33 @@ void process_game(){
 			case eID_RESET:
 				//reset score to zero
 				score = 0;
+
+				//TODO: init decoder !!!
+
 				break;
 			default: break;
 		}
 
 	}
 
-	//update score
+	//update score only if there is a collision
 	if(check_collision()){
 		score++;
 
 		if(score & 0xffff){
 			score = 0;
 		}
+
+		message->data[0] = (score & 0xff);
+		message->data[1] = (score >> 8);
+
+		can_send_message(message);
+
 	}
 
-	message->id = eID_SCORE;
-	message->length = 2;
-	message->data[0] = (score & 0xff);
-	message->data[1] = (score >> 8);
-	can_send_message(message);
+	
+	
+	
 
 	//printf("encoder value: %u\r\n", get_encoder_value());
 	

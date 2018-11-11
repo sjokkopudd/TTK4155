@@ -143,7 +143,8 @@ void ex7_pwm_pulse(){
 	set_bit(DDRH, PH4);
 	int pos = 0;
 
-
+	encoder_reset();
+	timer_init();
 	while(1){
 		process_game();
 
@@ -155,19 +156,16 @@ void ex7_pwm_pulse(){
 void ex7_test(){
 	stdout = &uart_stream;
 	can_init();
+	dac_init();
+	adc_2_init();
 	init_pwm();
-	int pos;
-
+	//init_game_controller();
+	motor_init();
+	set_bit(DDRH, PH4);
 	while(1){
-		pos = 0;
-		generate_pulse_servo(pos);
+		encoder_reset();
 		_delay_ms(2000);
-		pos = 127;
-		generate_pulse_servo(pos);
-		_delay_ms(2000);
-		pos = 255;
-		generate_pulse_servo(pos);
-		_delay_ms(2000);
+
 	}
 }
 
@@ -295,6 +293,8 @@ int main(){
 	//test_timer();
 	ex7_pwm_pulse();
 	//test_motor();
+
+
 
 	//ex7_test();
 
