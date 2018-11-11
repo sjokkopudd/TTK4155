@@ -88,7 +88,7 @@ void encoder_reset(){
 	uint8_t counter = 0;
 	data = 100;
 	clear_bit(DDRH, PH1);
-	while(counter < 10000){
+	while(counter < 50){
 		dac_send(data);
 		counter ++;
 	}
@@ -96,10 +96,10 @@ void encoder_reset(){
 	_delay_us(100);
 
 	// left
-	uint8_t counter = 0;
+	counter = 0;
 	data = 100;
 	set_bit(DDRH, PH1);
-	while(counter < 10000){
+	while(counter < 50){
 		dac_send(data);
 		counter ++;
 	}
@@ -107,4 +107,11 @@ void encoder_reset(){
 
 	printf("MAX: %d\r\n", MAX);
 	printf("MIN: %d\r\n", MIN);
+}
+
+uint16_t convert_to_16bit(uint8_t slider_pos){
+	uint16_t interval = MAX-MIN;
+	uint16_t increment = interval/255;
+	uint16_t result = MIN + slider_pos*increment;
+	return result;  
 }

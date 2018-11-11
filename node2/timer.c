@@ -43,7 +43,6 @@ void timer_init(){
 }
 
 ISR(TIMER3_OVF_vect){
-<<<<<<< HEAD
 	encoder_value = get_encoder_value();
 	//PI_controller();
 	time += 20;
@@ -56,8 +55,6 @@ uint8_t get_time(){
 uint8_t get_integration_value(){
 	return encoder_value;
 }
-=======
-	printf("in timer interrupt\r\n");
 
-}
->>>>>>> 13f9c942b72a376457979d82d1c0d154004a009c
+
+
