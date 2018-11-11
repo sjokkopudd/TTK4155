@@ -14,7 +14,7 @@
 
 static uint8_t MAX;
 static uint8_t MIN;
-volatile uint16_t current_position;
+volatile uint16_t current_position = 0;
 
 void motor_init(){
 	//enable motor

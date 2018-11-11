@@ -88,7 +88,7 @@ void process_game(){
 	message->data[1] = (score >> 8);
 	can_send_message(message);
 
-	printf("encoder value: %u\r\n", get_encoder_value());
+	//printf("encoder value: %u\r\n", get_encoder_value());
 	
 	
 }

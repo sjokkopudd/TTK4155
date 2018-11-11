@@ -63,6 +63,8 @@ void discrete_PI_controller(){
 	integration_value += error;
 
 	uint16_t output = K_p*error + T*K_i*integration_value;
+
+	printf("u: %u\r\n", output);
 }
 
 
