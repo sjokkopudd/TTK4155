@@ -12,9 +12,9 @@
 
 #define DEAD_ZONE 40
 
-static uint8_t MAX;
-static uint8_t MIN;
-volatile uint16_t current_position = 0;
+static uint16_t MAX;
+static uint16_t MIN;
+volatile uint8_t current_position = 0;
 
 void motor_init(){
 	//enable motor
@@ -57,7 +57,7 @@ void update_motor(uint8_t val){
 }
 
 void update_position(uint8_t pos){
-	current_position = convert_to_16bit(pos);
+	current_position = pos;
 }
 
 uint16_t get_encoder_value(){
@@ -104,10 +104,10 @@ void encoder_reset(){
 		dac_send(data);
 		counter ++;
 	}
-	MIN = get_encoder_value();
+	MAX = get_encoder_value();
 
-	printf("MAX: %d\r\n", MAX);
-	printf("MIN: %d\r\n", MIN);
+	printf("MAX: %u\r\n", MAX);
+	printf("MIN: %u\r\n", MIN);
 
 	//make sure that we don't get overflow error
 	if (MAX < MIN){
