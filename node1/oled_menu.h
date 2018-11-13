@@ -51,12 +51,11 @@ enMenuLeaf oled_menu_navigation_select(void);
 
 void oled_highlight_menu(void);
 void oled_update_difficulty(uint8_t diff);
-void oled_print_difficulty(void);
+void oled_print_difficulty(uint8_t difficulty);
 void oled_print_play_mode(void);
-void oled_print_players(void);
 
 void oled_update_score(uint16_t score);
-void oled_print_players(void);
+void oled_print_players(uint8_t active_player);
 void oled_highlight_player(uint8_t player);
 void oled_select_player(uint8_t player);
 

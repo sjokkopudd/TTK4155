@@ -24,6 +24,8 @@
 
 //variable for the difficulty: 0 lowest and 9 highest
 static uint8_t difficulty = 0;
+static uint16_t score = 0;
+
 static uint8_t player = 1;
 
 static enStatePinball enCurrState;
@@ -39,7 +41,7 @@ static void init_position(void);
 //only for debug
 static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 
-static uint16_t score = 0;
+
 
 
 // ---------------------------------------------------------------
@@ -257,10 +259,10 @@ enStatePinball evt_select_menu_item(){
 
 	switch(currentLeaf){
 		case eSEL_PLAYER:
-			oled_print_players();
+			oled_print_players(player);
 			return ePLAYER;
 		case eSET_DIFF: 
-			oled_print_difficulty();
+			oled_print_difficulty(difficulty);
 			return eDIFF;
 		case eSTART_GAME:
 			init_position();

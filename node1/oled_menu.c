@@ -43,7 +43,6 @@ static const char* STR_MENU_DIFFICULTY= "Difficulty";
 static const char* STR_MENU_PLAYER= "Player";
 
 static const char* STR_MENU_MAIN = "Main Menu";
-static uint8_t currDifficulty = 0;
 
 
 //only for debug
@@ -337,7 +336,7 @@ void oled_update_score(uint16_t score){
 //--------------------------------------------------------
 // prints difficulty to menu
 //--------------------------------------------------------
-void oled_print_difficulty(void){
+void oled_print_difficulty(uint8_t difficulty){
 	#ifndef DEBUG
 		oled_pos(0, 0); 
 		oled_print("Set difficulty");
@@ -357,7 +356,7 @@ void oled_print_difficulty(void){
 		printf("Diff = ");
 	#endif
 
-	oled_update_difficulty(currDifficulty);
+	oled_update_difficulty(difficulty);
 	
 }
 
@@ -375,13 +374,12 @@ void oled_update_difficulty(uint8_t diff){
   		printf("curr diff= %s\n", str);
   	#endif
 	
-	currDifficulty = diff;
 }
 
 // ---------------------------------------------------
 // prints all 4 player available
 // ---------------------------------------------------
-void oled_print_players(void){
+void oled_print_players(uint8_t active_player){
 	oled_reset();
 	oled_pos(0,0);
 	oled_print("Select Player");
@@ -394,7 +392,7 @@ void oled_print_players(void){
 	oled_pos(5,0);
 	oled_print("Player 4");
 
-	oled_highlight_player(1);
+	oled_highlight_player(active_player);
 }
 
 
