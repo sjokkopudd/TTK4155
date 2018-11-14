@@ -84,16 +84,17 @@ uint16_t get_encoder_value(){
 }
 
 void encoder_reset(){
+	//reset encoder
+	clear_bit(PORTH, PH6);
+	_delay_us(20);
+	set_bit(PORTH, PH6);
+
 	//drive the motor to both ends
 	uint8_t data;
 	// right
 	uint8_t counter = 0;
 	data = 100;
 	clear_bit(DDRH, PH1);
-	/*while(counter < 50){
-		dac_send(data);
-		counter ++;
-	}*/
 
 	dac_send(data);
 	_delay_ms(1000);
@@ -104,14 +105,7 @@ void encoder_reset(){
 	counter = 0;
 	data = 100;
 	set_bit(DDRH, PH1);
-	/*while(counter < 50){
-		dac_send(data);
-		counter ++;
-<<<<<<< HEAD
-	}
-	MAX = get_encoder_value();
-=======
-	}*/
+
 	dac_send(data);
 	_delay_ms(1000);
 	MAX = get_encoder_value();
@@ -121,18 +115,6 @@ void encoder_reset(){
 
 	printf("MAX: %u\r\n", MAX);
 	printf("MIN: %u\r\n", MIN);
-
-	//make sure that we don't get overflow error
-	if (MAX < MIN){
-		//drive the motor a little while letting the thread glide over the driveshaft 
-		//in order to push the encoder to new values not in overflow range.
-		/*while(counter < 15){
-		dac_send(200);
-		counter ++;
-		}*/
-		//try again
-		encoder_reset();
-	}	
 }
 
 uint16_t convert_to_16bit(uint8_t slider_pos){
