@@ -90,8 +90,8 @@ int16_t get_encoder_value(){
 
 	//combine to 16bit output
 	int16_t result = ((int16_t)high << 8) | low;
-	printf("result: %d\r\n", result );
-	return result;
+	//printf("result: %d\r\n", result );
+	return -result;
 }
 
 void encoder_reset(){
@@ -102,7 +102,8 @@ void encoder_reset(){
 	data = 70;
 	set_bit(DDRH, PH1);
 	dac_send(data);
-	_delay_ms(1000);
+	_delay_ms(1600);
+	dac_send(0);
 
 	//reset encoder
 	clear_bit(PORTH, PH6);
@@ -117,7 +118,7 @@ void encoder_reset(){
 	data = 70;
 	clear_bit(DDRH, PH1);
 	dac_send(data);
-	_delay_ms(1000);
+	_delay_ms(1600);
 
 	MAX = get_encoder_value();
 	_delay_us(100);

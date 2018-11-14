@@ -11,9 +11,9 @@
 #define K_i 1
 #define T 0.02
 
-volatile uint16_t sampled_encoder_value = 0;
+volatile int16_t sampled_encoder_value = 0;
 //volatile uint8_t time = 0;
-volatile uint8_t integration_value = 0;
+volatile float integration_value = 0;
 
 //initialize 16bit timer/counter3 to count at increments of 20ms, and enable flag
 void timer_init(){
@@ -61,12 +61,15 @@ ISR(TIMER3_OVF_vect){
 
 void discrete_PI_controller(){
 	uint8_t target_value = get_current_position();
-	uint8_t error = target_value - convert_encoder_to_8bit(sampled_encoder_value);
+	printf("target value %d\r\n", target_value);
+	int8_t error = target_value - convert_encoder_to_8bit(sampled_encoder_value);
+	printf("encoder value: %d\n\r", sampled_encoder_value);
+	printf("error: %d\r\n", error);
 	integration_value += error;
 
-	uint8_t output = K_p*error + T*K_i*integration_value;
+	float output = K_p*error + T*K_i*integration_value;
 
-	//printf("u: %d\r\n", output);
+	printf("u: %f\r\n", output);
 }
 
 
@@ -78,7 +81,7 @@ uint8_t convert_encoder_to_8bit(uint16_t value){
 	double increment = 255./interval;
 	//printf("increment: %d\r\n", increment);
 	uint8_t result = normalized_value*increment;
-	printf("increment: %d\r\n", increment);
+	printf("increment: %f\r\n", increment);
 	printf("result: %d\r\n", result);
 
 //	uint8_t result1 = (uint8_t)((normalized_value*255)./interval);
