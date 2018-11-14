@@ -72,13 +72,14 @@ void discrete_PI_controller(){
 
 uint8_t convert_encoder_to_8bit(uint16_t value){
 	uint16_t normalized_value = value - get_MIN();
-	//printf("normalized_value: %d\r\n", normalized_value);
+	printf("normalized_value: %u\r\n", normalized_value);
 	uint16_t interval = get_MAX()-get_MIN();
-	//printf("interval: %d\r\n", interval);
+	printf("interval: %u\r\n", interval);
 	double increment = 255./interval;
 	//printf("increment: %d\r\n", increment);
-	double result = normalized_value*increment;
-	printf("increment: %f\r\n", increment);
+	uint8_t result = normalized_value*increment;
+	printf("increment: %d\r\n", increment);
+	printf("result: %d\r\n", result);
 
 //	uint8_t result1 = (uint8_t)((normalized_value*255)./interval);
 	//printf("result1: %d\r\n", result1);

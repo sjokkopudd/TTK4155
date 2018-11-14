@@ -11,12 +11,13 @@
 #include "adc_driver_2.h"
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include <inttypes.h>
 #include "common.h"
 
 static data_t* receive;
 static data_t* message;
 static uint16_t score = 0;
-
+static uint8_t game_is_active = 0;
 static const uint16_t INIT_DEBOUNCE_VAL = 0xffff;
 
 //current collision state 
@@ -24,45 +25,138 @@ static collision_state curr_coll_state = eNo_Coll;
 
 volatile uint16_t debounce_buffer;
 
+
 // ----------------------------------------------------------------
-// using timer 1 to debounce the score counting
+// using timer 4 to debounce the score counting
 // ---------------------------------------------------------------
-static void timer1_init(){
+static void timer4_init(){
 	//disable global interrupts
 	cli();
 
-	//set clk prescalar fcpu/256
-	set_bit(TCCR1B, CS10);
-	clear_bit(TCCR1B, CS11);
-	clear_bit(TCCR1B, CS12);
+	//set timer to PWM fast mode
+	clear_bit(TCCR4A, WGM40);
+	set_bit(TCCR4A, WGM41);
+	set_bit(TCCR4B, WGM42);
+	set_bit(TCCR4B, WGM43);
 
-	ICR1 = 6250; //timer overflow every 100ms
+	//set output mode non-inverting
+	clear_bit(TCCR4A, COM4A0);
+	set_bit(TCCR4A, COM4A1);
+	
 
+	//set clk prescalar fcpu/1024
+	set_bit(TCCR4B, CS10);
+	clear_bit(TCCR4B, CS11);
+	set_bit(TCCR4B, CS12);
+
+	//set_bit(TIMSK4, TOIE4);
+
+
+	ICR4 = 3125; //timer overflow every 200ms
+
+	
 	//enable global interrupts
 	sei(); 
 
 
 }
 
-static void timer1_start(){
+static void timer4_start(){
 
-	debounce_buffer = INIT_DEBOUNCE_VAL;
+	//reset scores
+	score = 0;
 
 	//enable overflow interrupt
-	set_bit(TIMSK1, TOIE1);
+	set_bit(TIMSK4, TOIE4);
 }
 
-static void timer1_stop(){
-	clear_bit(TIMSK1, TOIE1);
+static void timer4_stop(){
+
+	clear_bit(TIMSK4, TOIE4);
 }
+
+static void timer5_init(){
+	//disable global interrupts
+	cli();
+
+	//set timer to PWM fast mode
+	clear_bit(TCCR5A, WGM50);
+	set_bit(TCCR5A, WGM51);
+	set_bit(TCCR5B, WGM52);
+	set_bit(TCCR5B, WGM53);
+
+	//set output mode non-inverting
+	clear_bit(TCCR5A, COM5A0);
+	set_bit(TCCR5A, COM5A1);
+	
+
+	//set clk prescalar fcpu/256
+	set_bit(TCCR5B, CS10);
+	clear_bit(TCCR5B, CS11);
+	clear_bit(TCCR5B, CS12);
+
+	
+
+	//set_bit(TIMSK5, TOIE5);
+
+
+	ICR5 = 6250; //timer overflow every 100ms
+	
+	
+	//enable global interrupts
+	sei(); 
+
+
+
+}
+
+static void timer5_start(){
+
+	//reset scores
+	debounce_buffer = 0xffff;
+
+	printf("start timer 5\r\n");
+
+	//enable overflow interrupt
+	set_bit(TIMSK5, TOIE5);
+
+}
+
+static void timer5_stop(){
+
+	printf("stop timer 5\n");
+
+	clear_bit(TIMSK5, TOIE5);
+}
+
+
+ISR(TIMER5_OVF_vect){
+
+
+
+	//printf("debounce_buffer: %u\r\n", debounce_buffer);
+
+	debounce_buffer <<= (check_collision());
+
+
+}
+
 
 // ---------------------------------------------------------------
 // timer 1 interrupt -> handling debouncing of ir-collision
 // --------------------------------------------------------------
-ISR(TIMER1_OVF_vect){
+ISR(TIMER4_OVF_vect){
+	
+	//printf("in timer one for debouncing\r\n");
 	//update debouncing buffer by getting the current ir collision value
 	//store the retrieved value in the buffer
-	debounce_buffer <<= (!check_collision());
+	score++;
+
+	printf("score: %u\r\n", score);
+	
+	//printf("timer: %u\n", debounce_buffer );
+	//
+	//printf("coll %d, timer: %u\r\n", !check_collision(), debounce_buffer );
 
 }
 
@@ -82,6 +176,9 @@ void init_game_controller(){
 
 	//initialize pwm to control the servo
 	init_pwm();
+	timer4_init();
+	timer5_init();
+
 
 	receive = malloc(sizeof(data_t));
 	message = malloc(sizeof(data_t));
@@ -92,6 +189,7 @@ void init_game_controller(){
 	update_servo(0);
 	solenoid_init();
 
+
 }
 
 
@@ -101,8 +199,7 @@ void init_game_controller(){
 // -------------------------------------------------------------------
 void process_game(){
 	//message id and length for sending the score
-	message->id = eID_SCORE;
-	message->length = 2;
+	
 
 
 	//buffer for receiving data via can
@@ -117,7 +214,7 @@ void process_game(){
 			case eID_SLIDER_RIGHT:
 				data = receive->data[0];
 				//printf("data: %d\r\n", data);
-				//update_motor(data);
+				update_motor(data);
 				update_position(data);
 				break;
 			
@@ -125,9 +222,16 @@ void process_game(){
 				//shoot function
 				solenoid_shoot();
 				break;
-			case eID_RESET:
+			case eID_START:
+				printf("game started \r\n");
 				//reset score to zero
 				score = 0;
+
+				//set game active
+				game_is_active = 1;
+
+				//start timer to count
+				timer4_start();
 
 				//TODO: init decoder !!!
 
@@ -138,52 +242,76 @@ void process_game(){
 	}
 
 	//update score only if there is a collision
-	/*if(check_collision()){
-		score++;
+	/*if(game_is_active){
+		if(check_collision()){
+			printf("collision\r\n");
+			timer4_stop();
+			message->id = eID_GAME_OVER;
+			message->length = 1;
+			message->data[0] = 0;
 
-		if(score & 0xffff){
-			score = 0;
+
+			can_send_message(message);
+
+			game_is_active = 0;
 		}
 
-		message->data[0] = (score & 0xff);
-		message->data[1] = (score >> 8);
-
-		can_send_message(message);
-
-	}
-*/
+	}*/
 	//check state of current collision
 	//if there is a collision -> debounce it
-	switch(curr_coll_state){
-		case eNo_Coll:
-			if(check_collision()){
-				//update state
-				curr_coll_state = eDebounce_Coll;
+	if(game_is_active){
 
-				//reset debouncing buffer, start timer
-				timer1_start();
 
-			}
-			break;
-		case eDebounce_Coll:
-			if(!(debounce_buffer ^ (0xe000))){
-				//is debounced -> increase score
-				score++;
+		switch(curr_coll_state){
+			case eNo_Coll:
+				
+				if(check_collision()){
 
-				//stop timer
-				timer1_stop();
+				    printf("collision detected\r\n");
+					//update state
+					curr_coll_state = eDebounce_Coll;
 
-				//send score
-				message->data[0] = (score & 0xff);
-				message->data[1] = (score >> 8);
+					//reset debouncing buffer, start timer
+					timer5_start();
 
-				can_send_message(message);
+				}
 
-				curr_coll_state = eNo_Coll;
-			}
+				else{
+					//send score
+					message->id = eID_SCORE;
+					message->length = 2;
+					message->data[0] = (score & 0xff);
+					message->data[1] = (score >> 8);
 
-			break;
-		default: break;
+					can_send_message(message);
+				}
+				break;
+			case eDebounce_Coll:
+				printf("eDebounce_Coll: buffer: %u\r\n", debounce_buffer);
+				if(!debounce_buffer){
+				//	printf("debounced\n");
+					//stop timer for counting scores
+					timer5_stop();
+
+					//debounce_buffer = 0xffff;
+
+					//send game over via can
+					message->id = eID_GAME_OVER;
+					message->length = 1;
+					message->data[0] = 0;
+
+					can_send_message(message);
+
+					//change state
+					curr_coll_state = eNo_Coll;
+
+
+					game_is_active = 0;
+				}
+
+				break;
+			default: break;
+		}
 	}
 	
 	

@@ -9,7 +9,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-
 #include "SPI_driver.h"
 #include "mcp_driver.h"
 #include "MCP2515.h"
@@ -140,14 +139,15 @@ void ex7_pwm_pulse(){
 	init_pwm();
 	init_game_controller();
 	motor_init();
-	set_bit(DDRH, PH4);
+	//set_bit(DDRH, PH4);
 	int pos = 0;
 
-	encoder_reset();
-	timer_init();
-	while(1){
-		process_game();
 
+	//timer_init();
+	while(1){
+		encoder_reset();
+		//process_game();
+		_delay_ms(4000);
 	}
 
 
@@ -163,7 +163,8 @@ void ex7_test(){
 	motor_init();
 	set_bit(DDRH, PH4);
 	while(1){
-		encoder_reset();
+			
+		//encoder_reset();
 		_delay_ms(2000);
 
 	}
@@ -206,10 +207,16 @@ void ex8_dac(){
 
 void test_timer(){
 	stdout = &uart_stream;
-	timer_init();
-
 	
+	dac_init();
+	can_init();
+	init_pwm();
+	motor_init();
+	encoder_reset();
+	timer_init();
 	while(1){
+
+
 
 	}
 }
@@ -218,7 +225,8 @@ void test_encoder(){
 	stdout = &uart_stream;
 	motor_init();
 	while(1){
-		printf("encoder value: %d\r\n", get_encoder_value());
+		encoder_reset();
+		_delay_ms(2000);
 	}
 }
 
@@ -269,6 +277,7 @@ void test() {
 	}
 }
 
+
 int main(){
 	
 	unsigned long clock_speed = F_CPU;
@@ -292,6 +301,8 @@ int main(){
 	//ex7_ir_value();
 	//test_timer();
 	ex7_pwm_pulse();
+
+
 	//test_motor();
 
 
