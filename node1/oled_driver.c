@@ -186,6 +186,19 @@ void oled_write_screen(){
   }
 }
 
+void oled_print_trophy(){
+  //set the segment orientation: SEG0 is col 0
+  oled_pos(4,47);
+  for (int j = 0; j < 4; j++){
+    oled_goto_line(j+4);
+    for (int i = 0; i < 32; i++){
+      write_d(pgm_read_byte(&trophy[j][i]));
+    }
+    oled_goto_column(47);
+  }
+}
+
+
 
 
 void oled_set_brightness(uint8_t lvl){

@@ -17,6 +17,7 @@
 #include "mcp_driver.h"
 #include "MCP2515.h"
 #include "can_communication.h"
+#include "pwm_music.h"
 
 
 
@@ -274,6 +275,21 @@ void test(){
 	
 }
 
+void test_sound(){
+	init_pwm();
+
+
+	while(1){
+		button_sound();
+		_delay_ms(4000);
+
+	}
+
+
+
+}
+
+
 int main(){
 	
 	unsigned long clock_speed = F_CPU;
@@ -292,7 +308,9 @@ int main(){
 	//ex5_can();
 
 	//ex4_oled_first_steps();
-	ex4_oled_menu();
+
+	test_sound();
+	//ex4_oled_menu();
 
 	//ex5_spi_init();
 

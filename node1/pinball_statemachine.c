@@ -19,14 +19,17 @@
 #define MINIMUM_DIFFICULTY 0
 #define MAXIMUM_DIFFICULTY 9
 
-#define LAST_PLAYER 4
-#define FIRST_PLAYER 1
+#define NUM_PLAYERS 4
+#define LAST_PLAYER 3
+#define FIRST_PLAYER 0
 
 //variable for the difficulty: 0 lowest and 9 highest
 static uint8_t difficulty = 0;
 static uint16_t score = 0;
 
-static uint8_t player = 1;
+static uint8_t highScores[NUM_PLAYERS] = {0};
+
+static uint8_t player = 0;
 
 static enStatePinball enCurrState;
 static enMenuLeaf enMenuCurrLeaf;
@@ -128,7 +131,7 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 		evt_do_nothing, 
 		evt_exit_leaf,
 		evt_shoot,
-		evt_control_servo
+		evt_control_game
 	},
 	{
 		//state score
@@ -185,18 +188,33 @@ enStatePinball evt_navigate_back(){
 // ------------------------------------------------------
 // receives current score from node 2
 // -----------------------------------------------------
-static void get_score(){
+static uint8_t handle_responses(){
 	if(!can_receive_message(receive)){
 		switch(receive->id){
 			case eID_SCORE:
 				score = receive->data[0] + (receive->data[1] << 8);
+				oled_update_score(score);
+				return 1;
+				break;
+			case eID_GAME_OVER: 
+				print_game_over(score);
+				_delay_ms(1000);
+
+				if(score > highScores[player]){
+					highScores[player] = score;
+					print_high_score(score);
+				}
+				_delay_ms(1000);
+
+				 return 0;
 				break;
 			default: break;
 		}
 
-		oled_update_score(score);
+		
 
 	}
+	return 1;
 }
 
 
@@ -216,7 +234,7 @@ enStatePinball evt_shoot(){
 //-----------------------------------------------------
 // controlling servo -> sending x position of joystick
 // ----------------------------------------------------
-enStatePinball evt_control_servo(){
+enStatePinball evt_control_game(){
 	//static uint8_t lstVal = 128;
 	//(lstVal-x) > 5 || (x-lstVal)>5
 	
@@ -243,7 +261,15 @@ enStatePinball evt_control_servo(){
 	can_send_message(message);
 
 	
-	get_score();
+	if(!handle_responses()){
+		//game over has been received
+
+		return evt_exit_leaf(); 
+		//return eMENU;
+		
+
+		//
+	}
 
 
 	return ePLAY;
@@ -260,6 +286,7 @@ enStatePinball evt_select_menu_item(){
 	switch(currentLeaf){
 		case eSEL_PLAYER:
 			oled_print_players(player);
+			oled_select_player(player);
 			return ePLAYER;
 		case eSET_DIFF: 
 			oled_print_difficulty(difficulty);
@@ -483,6 +510,7 @@ void pinball_game_process(void){
 // ------------------------------------------------------
 void print_high_score(uint16_t score){
 
+	oled_print_high_score(score);
 
 }
 void print_animation(void* any/*any animation: enum*/){
@@ -493,6 +521,12 @@ void print_best_players(void){
 }
 
 void print_init_screen(void){
+
+}
+
+void print_game_over(uint16_t score){
+
+	oled_print_game_over(score, player);
 
 }
 
@@ -525,8 +559,8 @@ static void init_position(void){
 
 	_delay_ms(50);
 
-	//reset scores
-	message->id = eID_RESET;
+	//reset scores 
+	message->id = eID_START;
 	can_send_message(message);
 
 	_delay_ms(50);

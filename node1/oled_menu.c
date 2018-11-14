@@ -28,7 +28,7 @@
 #define MENU_HIGHLIGHT_INDENT 100
 #define PLAYER_HIGHLIGHT_INDENT 100
 #define PLAYER_SELECT_INDENT 80
-#define PLAYER_HIGHLIGHT_ROW_OFFSET 1
+#define PLAYER_HIGHLIGHT_ROW_OFFSET 2
 #define MENU_PRINT_INDENT 10
 
 
@@ -41,6 +41,8 @@ static const char* STR_MENU_START = "Start";
 static const char* STR_MENU_SCORE= "Score";
 static const char* STR_MENU_DIFFICULTY= "Difficulty";
 static const char* STR_MENU_PLAYER= "Player";
+
+static const char* PLAYER_NAMES[] = {"Link", "Sonic", "Waluigi", "Samus"};
 
 static const char* STR_MENU_MAIN = "Main Menu";
 
@@ -384,13 +386,13 @@ void oled_print_players(uint8_t active_player){
 	oled_pos(0,0);
 	oled_print("Select Player");
 	oled_pos(2,0);
-	oled_print("Player 1");
+	oled_print(PLAYER_NAMES[0]);
 	oled_pos(3,0);
-	oled_print("Player 2");
+	oled_print(PLAYER_NAMES[1]);
 	oled_pos(4,0);
-	oled_print("Player 3");
+	oled_print(PLAYER_NAMES[2]);
 	oled_pos(5,0);
-	oled_print("Player 4");
+	oled_print(PLAYER_NAMES[3]);
 
 	oled_highlight_player(active_player);
 }
@@ -400,7 +402,7 @@ void oled_print_players(uint8_t active_player){
 // highlight currently chosen player
 // --------------------------------------------------
 void oled_highlight_player(uint8_t player){
-	static uint8_t lastPlayer = 1;
+	static uint8_t lastPlayer = 0;
 
 	if(lastPlayer != player){
 
@@ -436,7 +438,45 @@ void oled_select_player(uint8_t player){
 
 }
 
+// --------------------------------------------------
+// print the high score trophy here
+// --------------------------------------------------
+void oled_print_high_score(uint16_t score){
 
+	oled_reset();
+
+	oled_pos(1,0);
+	oled_print(" NEW HIGHSCORE");
+
+	oled_print_trophy();
+
+}
+
+// --------------------------------------------------
+// print game over with scores
+// --------------------------------------------------
+void oled_print_game_over(uint16_t score, uint8_t player){
+	oled_reset();
+	oled_pos(0,0);
+
+	//TODO game over
+	oled_print("GAME OVER");
+
+	oled_pos(1,0);
+	oled_print("Scores");
+	oled_pos(2,0);
+	oled_print("Player:");
+	char str[10];
+    sprintf(str, "%s" ,PLAYER_NAMES[player]);
+	oled_pos(3,0);
+    oled_print(str);
+    char str1[2];
+    sprintf(str1, "%u", score);
+    oled_pos(4,0);
+    oled_print(str1);
+
+
+}
 
 
 

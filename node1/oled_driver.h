@@ -26,4 +26,6 @@ void oled_set_brightness(uint8_t lvl);
 
 void oled_write_screen();
 
+void oled_print_trophy();
+
 #endif

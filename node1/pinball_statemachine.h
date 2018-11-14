@@ -59,7 +59,7 @@ enStatePinball evt_decrement_diff(void);
 enStatePinball evt_increment_player(void);
 enStatePinball evt_decrement_player(void);
 enStatePinball evt_sel_player(void);
-enStatePinball evt_control_servo(void);
+enStatePinball evt_control_game(void);
 enStatePinball evt_shoot(void);
 
 //--------------------------------------------------------
@@ -73,6 +73,7 @@ void pinball_game_process(void);
 //print functions to oled
 // ------------------------------------------------------
 void print_high_score(uint16_t score);
+void print_game_over(uint16_t score);
 void print_animation(void* any/*any animation: enum*/);
 void print_best_players(void);
 void print_init_screen(void);

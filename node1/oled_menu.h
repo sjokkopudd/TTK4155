@@ -55,6 +55,8 @@ void oled_print_difficulty(uint8_t difficulty);
 void oled_print_play_mode(void);
 
 void oled_update_score(uint16_t score);
+void oled_print_high_score(uint16_t score);
+void oled_print_game_over(uint16_t score, uint8_t player);
 void oled_print_players(uint8_t active_player);
 void oled_highlight_player(uint8_t player);
 void oled_select_player(uint8_t player);
