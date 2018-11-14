@@ -214,7 +214,7 @@ void process_game(){
 			case eID_SLIDER_RIGHT:
 				data = receive->data[0];
 				//printf("data: %d\r\n", data);
-				update_motor(data);
+				//update_motor(data);
 				update_position(data);
 				break;
 			

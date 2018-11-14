@@ -67,6 +67,25 @@ void update_motor(uint8_t val){
 	}
 }
 
+void update_motor_with_u(int32_t val){
+	if (val < 0){
+		set_bit(DDRH, PH1);
+		if (abs(val) > 200){
+			val = 200;
+		}
+		dac_send(abs(val));
+		printf("to the right: %d\r\n", abs(val));
+	}
+	else{
+		clear_bit(DDRH, PH1);
+		if (abs(val) > 200){
+			val = 200;
+		}
+		dac_send(abs(val));
+		printf("to the left: %d\r\n", val);
+	}
+}
+
 void update_position(uint8_t pos){
 	current_position = pos;
 }
@@ -97,9 +116,9 @@ int16_t get_encoder_value(){
 void encoder_reset(){
 	//drive the motor to both ends
 	uint8_t data;
-	// right
+	// left
 	uint8_t counter = 0;
-	data = 70;
+	data = 100;
 	set_bit(DDRH, PH1);
 	dac_send(data);
 	_delay_ms(1600);
@@ -113,9 +132,9 @@ void encoder_reset(){
 	MIN = get_encoder_value();
 	_delay_us(100);
 
-	// left
+	// right
 	counter = 0;
-	data = 70;
+	data = 100;
 	clear_bit(DDRH, PH1);
 	dac_send(data);
 	_delay_ms(1600);

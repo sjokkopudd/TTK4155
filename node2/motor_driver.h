@@ -8,6 +8,8 @@ void encoder_reset();
 
 void update_motor(uint8_t val);
 
+void update_motor_with_u(int32_t val);
+
 void update_position(uint8_t pos);
 
 int16_t get_encoder_value();

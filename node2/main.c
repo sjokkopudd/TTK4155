@@ -142,12 +142,12 @@ void ex7_pwm_pulse(){
 	//set_bit(DDRH, PH4);
 	int pos = 0;
 
-
-	//timer_init();
+	encoder_reset();
+	timer_init();
 	while(1){
-		encoder_reset();
-		//process_game();
-		_delay_ms(4000);
+		//encoder_reset();
+		process_game();
+		//_delay_ms(4000);
 	}
 
 
