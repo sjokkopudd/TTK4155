@@ -61,15 +61,15 @@ ISR(TIMER3_OVF_vect){
 
 void discrete_PI_controller(){
 	uint8_t target_value = get_current_position();
-	printf("target value %d\r\n", target_value);
+	//printf("target value %d\r\n", target_value);
 	int8_t error = target_value - convert_encoder_to_8bit(sampled_encoder_value);
-	printf("encoder value: %d\n\r", sampled_encoder_value);
-	printf("error: %d\r\n", error);
+	//printf("encoder value: %d\n\r", sampled_encoder_value);
+	//printf("error: %d\r\n", error);
 	integration_value += error;
 
 	float output = K_p*error + T*K_i*integration_value;
 
-	printf("u: %f\r\n", output);
+	//printf("u: %f\r\n", output);
 }
 
 
