@@ -17,7 +17,7 @@
 #include "mcp_driver.h"
 #include "MCP2515.h"
 #include "can_communication.h"
-#include "pwm_music.h"
+//#include "pwm_music.h"
 
 
 
@@ -275,7 +275,7 @@ void test(){
 	
 }
 
-void test_sound(){
+/*void test_sound(){
 	init_pwm();
 
 
@@ -287,7 +287,7 @@ void test_sound(){
 
 
 
-}
+}*/
 
 
 int main(){
@@ -309,8 +309,8 @@ int main(){
 
 	//ex4_oled_first_steps();
 
-	test_sound();
-	//ex4_oled_menu();
+	//test_sound();
+	ex4_oled_menu();
 
 	//ex5_spi_init();
 
