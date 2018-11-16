@@ -18,10 +18,9 @@
 #include "game_controller.h"
 #include "TWI_Master.h"
 #include "dac_driver.h"
-#include "motor_driver_v2.h"
+#include "motor_driver.h"
 #include "solenoid_driver.h"
-//#include "timer.h"
-#include "PID_controller.h"
+#include "timer.h"
 #include "common.h"
 
 //only for debug
@@ -140,7 +139,11 @@ void ex7_pwm_pulse(){
 	init_pwm();
 	init_game_controller();
 	motor_init();
-	PID_init();
+	//set_bit(DDRH, PH4);
+	int pos = 0;
+
+	encoder_reset();
+	timer_init();
 	while(1){
 		//encoder_reset();
 		process_game();
@@ -209,11 +212,68 @@ void test_timer(){
 	can_init();
 	init_pwm();
 	motor_init();
-	
+	encoder_reset();
+	timer_init();
 	while(1){
 
 
 
+	}
+}
+
+void test_encoder(){
+	stdout = &uart_stream;
+	motor_init();
+	while(1){
+		encoder_reset();
+		_delay_ms(2000);
+	}
+}
+
+void test_motor(){
+	static data_t* receive;
+
+	dac_init();
+	can_init();
+	init_pwm();
+	motor_init();
+	while(1){
+		if(!can_receive_message(receive)){
+		uint8_t data;
+		switch(receive->id){
+
+			case eID_SLIDER_RIGHT:
+				data = receive->data[0];
+				update_motor(data);
+				break;
+		default: break;
+		}
+
+	}
+	}
+}
+
+void test() {
+	stdout = &uart_stream;
+	dac_init();
+	uint8_t val = 60;
+	while(1){
+		for (int i = 0; i < 255; i++){
+			update_motor(i);
+			_delay_ms(20);
+		}
+		/*val = 0
+		update_motor(val);
+		_delay_ms(2000);
+		val = 127;
+		update_motor(val);
+		_delay_ms(2000);
+		val = 255;
+		update_motor(val);
+		_delay_ms(2000);*/
+
+		/*unsigned char data = val;
+		printf("data: %d\n", data);*/
 	}
 }
 

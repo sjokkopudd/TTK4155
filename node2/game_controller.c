@@ -13,7 +13,6 @@
 #include <avr/io.h>
 #include <inttypes.h>
 #include "common.h"
-#include "PID_controller.h"
 
 static data_t* receive;
 static data_t* message;
@@ -214,8 +213,9 @@ void process_game(){
 				break;
 			case eID_SLIDER_RIGHT:
 				data = receive->data[0];
-				//update reference for PID
-				PID_update_reference(data);			
+				//printf("data: %d\r\n", data);
+				//update_motor(data);
+				update_position(data);
 				break;
 			
 			case eID_BTN_RIGHT:
