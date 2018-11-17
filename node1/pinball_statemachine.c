@@ -194,14 +194,9 @@ enStatePinball evt_navigate_back(){
 static uint8_t handle_responses(){
 	if(!can_receive_message(receive)){
 		switch(receive->id){
-			case eID_SCORE:
-				score = receive->data[0] + (receive->data[1] << 8);
-				oled_update_score(score);
-				return 1;
-				break;
-			case eID_GAME_OVER: 
+			case eID_GAME_OVER:
 				print_game_over(score);
-				_delay_ms(1000);
+				_delay_ms(3000);
 
 				if(score > highScores[player]){
 					highScores[player] = score;
@@ -211,6 +206,9 @@ static uint8_t handle_responses(){
 						currLeader = player;
 						currHighScore = score;
 						print_high_score(score);
+						_delay_ms(3000);
+
+
 
 					}
 				}
@@ -218,6 +216,13 @@ static uint8_t handle_responses(){
 
 				 return 0;
 				break;
+			case eID_SCORE:
+			
+				score = receive->data[0] + (receive->data[1] << 8);
+				oled_update_score(score);
+				return 1;
+				break;
+			
 			default: break;
 		}
 
@@ -260,7 +265,7 @@ enStatePinball evt_control_game(){
 
 	can_send_message(message);
 	
-	
+	_delay_ms(50);
 	//getting right slider position and sending it over the CAN bus
 
 	uint8_t x_slider = get_slider_pos_right();
@@ -271,7 +276,7 @@ enStatePinball evt_control_game(){
 
 	can_send_message(message);
 
-	_delay_ms(50);
+	//_delay_ms(50);
 	if(!handle_responses()){
 		//game over has been received
 
@@ -576,30 +581,19 @@ void update_play_screen(){
 // sends initial start values for servo and motor
 // ------------------------------------------------------
 static void init_position(void){
-	uint8_t x_pos = 0;
-	uint8_t x_slider_pos = 0;
-
-	message->id = eID_JOY_X;
-	message->length = 1;
-	message->data[0] = x_pos;
-
-	can_send_message(message);
-
-	_delay_ms(50);
-
-	message->id = eID_SLIDER_RIGHT;
-	message->length = 1;
-	message->data[0] = x_slider_pos;
-
-	can_send_message(message);
-
-	_delay_ms(50);
 
 	//reset scores 
-	message->id = eID_START;
-	can_send_message(message);
 
-	_delay_ms(50);
+	//if(receive->id != eID_GAME_OVER){
+		message->id = eID_START;
+		message->length = 1;
+		message->data[0] = 0;
+		can_send_message(message);
+
+		_delay_ms(50);
+		can_send_message(message);
+	//}
+
 
 }
 
