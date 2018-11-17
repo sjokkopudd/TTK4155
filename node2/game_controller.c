@@ -153,11 +153,12 @@ ISR(TIMER4_OVF_vect){
 	//store the retrieved value in the buffer
 	score++;
 
-	printf("score: %u\r\n", score);
-	
-	//printf("timer: %u\n", debounce_buffer );
-	//
-	//printf("coll %d, timer: %u\r\n", !check_collision(), debounce_buffer );
+	message->id = eID_SCORE;
+	message->length = 2;
+	message->data[0] = (score & 0xff);
+	message->data[1] = (score >> 8);
+
+	can_send_message(message);
 
 }
 
@@ -207,6 +208,31 @@ void process_game(){
 	if(!can_receive_message(receive)){
 		uint8_t data;
 		switch(receive->id){
+			case eID_EXIT_GAME:
+				//set game inactive
+				game_is_active = 0; 
+
+				printf("got exit game!\r\n");
+				//stop timer to count scores
+				timer4_stop();
+			case eID_START:
+				//reset score to zero
+				
+				score = 0;
+
+				//set game active
+				game_is_active = 1;
+
+				//start timer to count
+				timer4_start();
+
+				//TODO: init decoder !!!*/
+
+				break;
+
+			default: break;
+				
+				break;
 			case eID_JOY_X:
 				//update servo position
 				data = receive->data[0];
@@ -222,54 +248,50 @@ void process_game(){
 				//shoot function
 				solenoid_shoot();
 				break;
-			case eID_START:
-				
-				printf("game started \r\n");
-				//reset score to zero
-				cli();
-				score = 0;
-				sei();
-
-				//set game active
-				game_is_active = 1;
-
-				//start timer to count
-				timer4_start();
-
-				break;
-			case eID_EXIT_GAME:
-				//stop timer to count scores
-				timer4_stop();
-
-				//set game inactive
-				game_is_active = 0;
-
-				break;
-
-			default: break;
+			
 		}
 
 	}
 
+
 	//update score only if there is a collision
-	/*if(game_is_active){
+	if(game_is_active){
+		printf("ir_value: %u\r\n", get_IR_value());
 		if(check_collision()){
-			printf("collision\r\n");
-			timer4_stop();
-			message->id = eID_GAME_OVER;
-			message->length = 1;
-			message->data[0] = 0;
+			printf("coll detected\r\n");
+			cli();
+				game_is_active = 0;
+				timer4_stop();
+
+				message->id = eID_GAME_OVER;
+				message->length = 1;
+				message->data[0] = 0;
 
 
-			can_send_message(message);
+				can_send_message(message);
+				printf("game over sent\r\n");
+				_delay_ms(70);
+				can_send_message(message);
+				printf("game over sent twice\r\n");
 
-			game_is_active = 0;
+
+				sei();
+				
+			//}
 		}
 
-	}*/
+	}
+
+	//	else{
+			//send score
+			
+			
+		//}
+
+	
 	//check state of current collision
 	//if there is a collision -> debounce it
-	if(game_is_active){
+	/*if(game_is_active){
 
 
 		switch(curr_coll_state){
@@ -301,10 +323,9 @@ void process_game(){
 				if(!debounce_buffer){
 				//	printf("debounced\n");
 					//stop timer for counting scores
-					timer4_stop();
-
-					//stop timer to debounce
 					timer5_stop();
+
+					//debounce_buffer = 0xffff;
 
 					//send game over via can
 					message->id = eID_GAME_OVER;
@@ -323,7 +344,7 @@ void process_game(){
 				break;
 			default: break;
 		}
-	}
+	}*/
 	
 	
 	

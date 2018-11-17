@@ -40,6 +40,7 @@ void motor_init(){
 	
 	motor_calibrate();
 
+
 }
 
 // ---------------------------------------
@@ -72,7 +73,7 @@ void motor_set_direction(dir_t dir){
 // ---------------------------------------
 void motor_calibrate(){
 	motor_set_direction(eDIR_LEFT);
-	motor_set_speed(100);
+	motor_set_speed(80);
 	_delay_ms(1600);
 	motor_set_speed(0);
 
@@ -84,7 +85,7 @@ void motor_calibrate(){
 
 	// go to the right
 	motor_set_direction(eDIR_RIGHT);
-	motor_set_speed(100);
+	motor_set_speed(80);
 	_delay_ms(1600);
 
 
@@ -94,8 +95,8 @@ void motor_calibrate(){
 	_delay_us(100);
 	motor_set_speed(0);
 
-	printf("MIN: %d\r\n", MIN);
-	printf("MAX: %d\r\n", MAX);
+	//printf("MIN: %d\r\n", MIN);
+	//printf("MAX: %d\r\n", MAX);
 
 	/*int16_t prev_rot = cur_rot+200;
 	while(prev_rot != cur_rot) {
@@ -182,6 +183,7 @@ int16_t motor_get_encoder_value(){
 
 
 void motor_set_speed(uint8_t speed){
+	printf("in speed, val: %d\r\n", speed);
 	dac_send(speed);
 
 }
@@ -190,7 +192,7 @@ void motor_set_speed(uint8_t speed){
 // update motor with controlled u
 // ----------------------------------------
 void update_motor_with_u(int16_t val){
-
+		printf("in update motor\r\n");
 	if (val < 0){
 		//set direction to left
 		motor_set_direction(eDIR_LEFT);
@@ -206,9 +208,14 @@ void update_motor_with_u(int16_t val){
 			val = 200;
 		}
 	}
-
+	unsigned char data = abs(val);
+	printf("before set speed, value: %d\r\n", data);
 	//send speed
-	motor_set_speed(abs(val));
+	//motor_set_speed(abs(val));
+	dac_send(data);
+	printf("after set speed\r\n");
+
+
 }
 
 

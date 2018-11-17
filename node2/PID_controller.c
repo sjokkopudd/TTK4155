@@ -8,52 +8,101 @@
 #include "PID_controller.h"
 #include "motor_driver_v2.h"
 #include "common.h"
+#include "dac_driver.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 
-static int16_t ref_position = 0;
-static double motor_position_middle = 0;
+volatile int16_t ref_position = 127;
+//static double motor_position_middle = 0;
 static double Kp = 1; //2;
-static double Ki = 0.005; //4;
-static double Kd = 0.01;//0.1;
-static double integral = 0;
-static int16_t prev_error = 0;
+static double Ki = 0.001; //4;
+static double Kd = 0.001;//0.1;
+volatile int16_t integral = 0;
+volatile int16_t prev_error = 0;
 static double dt = 0.02;//0.016;
 
-ISR(TIMER3_OVF_vect){
-	
-	int16_t encoder_val = motor_get_encoder_value();
+void PID_controller(){
+    double encoder = motor_get_encoder_value()*(255./get_MAX());
+   // printf("encoder_raw: %d\r\n",motor_get_encoder_value());
+    //printf("ref_position: %d\r\n", ref_position);
+	int16_t error = ref_position - encoder;
+	//printf("error: %d\r\n", error);
+	integral += error;
 
-	printf("encoder_val: %d\r\n", encoder_val);
-	printf("motor_position_middle: %f\r\n", motor_position_middle);
-
-	double measured = (encoder_val + motor_position_middle) ./ (-motor_position_middle/100);
-	
-	int16_t ref = ref_position;
-	
-	int16_t error = ref - measured;
-	integral = integral + error * dt;
-	
 	if (error < 1){
 		integral = 0;
 	}
-	
-	double derivative = -(error - prev_error)./dt;
-	
-	int16_t u = 0;
-	u = Kp * error + Ki  * integral + Kd * derivative;
+
+	int16_t u = Kp*error + Ki*dt*integral + (Kd/dt)*(error - prev_error);
 
 	prev_error = error;
 
-	update_motor_with_u(u);
+	if (u < 0){
+		//set direction to left
+		motor_set_direction(eDIR_LEFT);
+		if (abs(u) > 100){
+			u = 100;
+		}
+		
+	}
+	else{
+		//set direction to right
+		motor_set_direction(eDIR_RIGHT);
+		if (abs(u) > 100){
+			u = 100;
+		}
+	}
+	dac_send(u);
+	//printf("u: %d\r\n", u);
+}
+
+ISR(TIMER3_OVF_vect){
+
+//	printf("in interrupt\n");
+
+	PID_controller();
+
+	/*double encoder = motor_get_encoder_value()*(255./get_MAX());
+   // printf("encoder_raw: %d\r\n",motor_get_encoder_value());
+   // printf("ref_position: %d\r\n", ref_position);
+	int16_t error = ref_position - encoder;
+	//printf("error: %d\r\n", error);
+	integral += error;
+
+	if (error < 1){
+		integral = 0;
+	}
+
+	int16_t u = Kp*error + Ki*dt*integral + (Kd/dt)*(error - prev_error);
+
+	prev_error = error;
+
+	if (u < 0){
+		//set direction to left
+		motor_set_direction(eDIR_LEFT);
+		if (abs(u) > 100){
+			u = 100;
+		}
+		
+	}
+	else{
+		//set direction to right
+		motor_set_direction(eDIR_RIGHT);
+		if (abs(u) > 100){
+			u = 100;
+		}
+	}
+	dac_send(u);
+	printf("u: %d\r\n", u);
 	
-	
+	*/
 
 }
 
 void PID_init(){
 	
-	 motor_position_middle = -(get_MAX() + get_MIN()) / 2;
+	 //motor_position_middle = -(get_MAX() + get_MIN()) / 2;
 	
 	/*//-------------INITIALIZE TIMER INPUT-----------------
 	
@@ -93,16 +142,20 @@ void PID_init(){
 	clear_bit(TCCR3B, CS31);
 	set_bit(TCCR3B, CS32);
 
-	//set the counter to enable flag every 20ms
+	//set the counter to enable flag every 40ms
 	ICR3 = 1250;
+
+	printf("pid init done\n");
 
 	//enable global interrupts
 	sei();
+
 	
 }
 
-void PID_update_reference(int16_t pos){
-	ref_position = pos;
+void PID_update_reference(uint8_t pos){
+	ref_position = (int16_t)pos;
+
 }
 
 /*void PID_update(difficulty_t difficulty){
@@ -125,3 +178,5 @@ void PID_update_reference(int16_t pos){
 			break;
 		}
 }*/
+
+

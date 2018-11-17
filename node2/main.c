@@ -161,9 +161,24 @@ void ex7_pwm_pulse(){
 	adc_2_init();
 	init_pwm();
 	init_game_controller();
+	//dac_send(0);
+	//_delay_ms(5000);
 	motor_init();
 	PID_init();
 	while(1){
+
+		/*if(check_collision()){
+			printf("collision detected \r\n");
+
+			printf("ir value: %u\r\n", get_IR_value());
+		}
+
+		printf("ir value: %u\r\n", get_IR_value());*/
+		//printf("in while\n");
+		/*update_motor_with_u(-100);
+		_delay_ms(1000);
+		update_motor_with_u(100);
+		_delay_ms(1000);*/
 		//encoder_reset();
 		process_game();
 		//_delay_ms(4000);
