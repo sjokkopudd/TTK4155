@@ -13,19 +13,28 @@ typedef struct data_t
 
 }data_t;
 
+typedef struct game_msg_node1_t
+{
+	uint8_t game_start;
+	uint8_t game_exit;
+	uint8_t game_shoot;
+	uint8_t game_joy;
+	uint8_t game_slider;
+}game_msg_node1_t;
+
+typedef struct game_msg_node2_t
+{
+	uint8_t game_over;
+	uint16_t game_score;	
+}game_msg_node2_t;
+
+
 typedef enum enMsgId
 {
-	eID_JOY_X = 0,
-	eID_JOY_Y = 1,
-	eID_BTN_RIGHT = 2,
-	eID_BTN_LEFT = 3,
-	eID_SLIDER_RIGHT = 4,
-	eID_SLIDER_LEFT = 5,
-	eID_SCORE = 6,
-	eID_START = 7,
-	eID_GAME_OVER = 8,
-	eID_EXIT_GAME = 9
+	eID_NODE1 = 0,
+	eID_NODE2 = 1
 }enMsgId;
+
 
 void can_init();
 

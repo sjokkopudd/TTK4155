@@ -42,6 +42,15 @@ static menu_t* currMenu;
 static data_t* message;
 static data_t* receive;
 
+static game_msg_node1_t curr_msg_node1 = {0};
+static game_msg_node2_t curr_msg_node2 = {0};
+
+static game_msg_node1_t msg_shoot = {0,0,1,0,0};
+static game_msg_node1_t msg_start = {1,0,0,0,0};
+static game_msg_node1_t msg_exit = {0,1,0,0,0};
+static game_msg_node1_t msg_data = {0,0,0,0,0};
+
+
 static void init_position(void);
 
 //only for debug
@@ -193,12 +202,18 @@ enStatePinball evt_navigate_back(){
 // -----------------------------------------------------
 static uint8_t handle_responses(){
 	if(!can_receive_message(receive)){
-		switch(receive->id){
-			case eID_GAME_OVER:
-				print_game_over(score);
-				_delay_ms(3000);
+		//read data from receive buffer
+		curr_msg_node2.game_over = receive->data[0];
+		curr_msg_node2.game_score  = receive->data[1] + (receive->data[2] << 8);
 
-				if(score > highScores[player]){
+		score = curr_msg_node2.game_score;
+
+		//check if game over is set
+		if(curr_msg_node2.game_over == 1){
+			print_game_over(score);
+			_delay_ms(3000);
+
+			if(score > highScores[player]){
 					highScores[player] = score;
 					//check if overall highScore
 					if(score > currHighScore){
@@ -207,28 +222,16 @@ static uint8_t handle_responses(){
 						currHighScore = score;
 						print_high_score(score);
 						_delay_ms(3000);
-
-
-
 					}
-				}
-				_delay_ms(1000);
+			}
+			_delay_ms(1000);
+			return 0;
 
-				 return 0;
-				break;
-			case eID_SCORE:
-			
-				score = receive->data[0] + (receive->data[1] << 8);
-				oled_update_score(score);
-				return 1;
-				break;
-			
-			default: break;
 		}
-
-		
-
+		//update oled with current score
+		oled_update_score(score);
 	}
+
 	return 1;
 }
 
@@ -237,16 +240,15 @@ static uint8_t handle_responses(){
 // shoot function for solenoid
 // ---------------------------------------------------
 enStatePinball evt_shoot(){
-	message->id = eID_BTN_RIGHT;
-	message->length = 1;
-	message->data[0] = 1;
 
-	can_send_message(message);
-
+	//update current message to 
+	curr_msg_node1 = msg_shoot;
 
 	return ePLAY;
 
 }
+
+
 //-----------------------------------------------------
 // controlling servo -> sending x position of joystick
 // ----------------------------------------------------
@@ -256,36 +258,15 @@ enStatePinball evt_control_game(){
 	
 	//getting current x position of joystick
 	uint8_t x = joystick_get_x_pos();
-
 	
-	//lstVal = x;
-	message->id = eID_JOY_X;
-	message->length = 1;
-	message->data[0] = x;
-
-	can_send_message(message);
-	
-	_delay_ms(50);
-	//getting right slider position and sending it over the CAN bus
+	//getting right slider position 
 
 	uint8_t x_slider = get_slider_pos_right();
 
-	message->id = eID_SLIDER_RIGHT;
-	message->length = 1;
-	message->data[0] = x_slider;
-
-	can_send_message(message);
-
-	//_delay_ms(50);
-	if(!handle_responses()){
-		//game over has been received
-
-		return evt_exit_leaf(); 
-		//return eMENU;
-		
-
-		//
-	}
+	//update current message
+	curr_msg_node1 = msg_data;
+	curr_msg_node1.game_joy = x;
+	curr_msg_node1.game_slider = x_slider;
 
 
 	return ePLAY;
@@ -310,7 +291,9 @@ enStatePinball evt_select_menu_item(){
 			oled_print_difficulty(difficulty);
 			return eDIFF;
 		case eSTART_GAME:
-			init_position();
+			//change current message to start 
+			curr_msg_node1 = msg_start;
+
 			oled_print_play_mode();
 			return ePLAY;
 		case eSEE_SCORE:
@@ -377,15 +360,8 @@ enStatePinball evt_exit_leaf(void){
 // quit game: go from state ePLAY to eMENU
 // --------------------------------------------
 enStatePinball evt_exit_play(void){
-	//send exit of the game to node2
-
-	message->id = eID_EXIT_GAME;
-	message->length = 1;
-	message->data[0] = 0;
-
-	can_send_message(message);
-
-	_delay_ms(50);
+	//send current message to exit game
+	curr_msg_node1 = msg_exit;
 
 	oled_menu_navigate_back(1);
 
@@ -522,7 +498,6 @@ enStateEvent get_event(){
 
 }
 
-
 // ------------------------------------------------------
 // main pinball processs, gets current event and according
 // to state and event a state change is executed or not 
@@ -530,19 +505,31 @@ enStateEvent get_event(){
 void pinball_game_process(void){
 	static uint8_t cnt = 0;
 	enStateEvent currEvent;
-	#ifndef DEBUG
-		currEvent = get_event();
-	#else
-		currEvent = debug_events[cnt];
-		cnt = (cnt +1)%5;
-		//function call, pointed to by current state and event (matrix)
-	#endif
+	currEvent = get_event();
+	currEvent = debug_events[cnt];
+	//function call, pointed to by current state and event (matrix)
 	enCurrState = (* evtHndlTable[enCurrState][currEvent])();
-	_delay_ms(100);
 
-	
-	
+	//send can messages to node2
+	message->id = eID_NODE1;
+	message->length = 5;
+	message->data[0] = curr_msg_node1.game_start;
+	message->data[1] = curr_msg_node1.game_exit;
+	message->data[2] = curr_msg_node1.game_shoot;
+	message->data[3] = curr_msg_node1.game_joy;
+	message->data[4] = curr_msg_node1.game_slider;
 
+
+	can_send_message(message);
+
+	_delay_ms(50);
+
+	//check incoming can messages
+	if(!handle_responses()){
+		//game over has been received
+		//update current state as it is now the menu state instead of the play state
+		enCurrState = evt_exit_leaf();	
+	}
 }
 
 // ------------------------------------------------------
@@ -576,24 +563,3 @@ void update_play_screen(){
 	//print oled score
 
 }
-
-// ------------------------------------------------------
-// sends initial start values for servo and motor
-// ------------------------------------------------------
-static void init_position(void){
-
-	//reset scores 
-
-	//if(receive->id != eID_GAME_OVER){
-		message->id = eID_START;
-		message->length = 1;
-		message->data[0] = 0;
-		can_send_message(message);
-
-		_delay_ms(50);
-		can_send_message(message);
-	//}
-
-
-}
-
