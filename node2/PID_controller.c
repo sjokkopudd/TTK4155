@@ -8,24 +8,26 @@
 #include "PID_controller.h"
 #include "motor_driver_v2.h"
 #include "common.h"
+#include <stdio.h>
 
-int16_t rot_max = -8800;
-int16_t rot_min = 100;
 
-int16_t ref_position = 0;
-double motor_position_middle = 0;
-double Kp = 1; //2;
-double Ki = 0.005; //4;
-double Kd = 0.01;//0.1;
-double integral = 0;
-int16_t prev_error = 0;
-double dt = 0.02;//0.016;
+static int16_t ref_position = 0;
+static double motor_position_middle = 0;
+static double Kp = 1; //2;
+static double Ki = 0.005; //4;
+static double Kd = 0.01;//0.1;
+static double integral = 0;
+static int16_t prev_error = 0;
+static double dt = 0.02;//0.016;
 
 ISR(TIMER3_OVF_vect){
 	
 	int16_t encoder_val = motor_get_encoder_value();
 
-	double measured = (encoder_val + motor_position_middle) / (-motor_position_middle/100);
+	printf("encoder_val: %d\r\n", encoder_val);
+	printf("motor_position_middle: %f\r\n", motor_position_middle);
+
+	double measured = (encoder_val + motor_position_middle) ./ (-motor_position_middle/100);
 	
 	int16_t ref = ref_position;
 	
@@ -36,7 +38,7 @@ ISR(TIMER3_OVF_vect){
 		integral = 0;
 	}
 	
-	double derivative = -(error - prev_error)/dt;
+	double derivative = -(error - prev_error)./dt;
 	
 	int16_t u = 0;
 	u = Kp * error + Ki  * integral + Kd * derivative;

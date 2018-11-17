@@ -44,7 +44,7 @@ uint16_t get_IR_value(){
 }
 
 uint8_t check_collision(){
-	if (get_IR_value() < 100){
+	if (get_IR_value() < 50){
 		return 1;
 	}
 	else {

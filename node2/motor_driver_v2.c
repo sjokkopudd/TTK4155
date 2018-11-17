@@ -9,6 +9,7 @@
 #include <avr/interrupt.h>
 #include "util/delay.h"
 #include "timer.h"
+#include <stdio.h>
 
 static int16_t MAX = 0;
 static int16_t MIN = 0;
@@ -72,20 +73,29 @@ void motor_set_direction(dir_t dir){
 void motor_calibrate(){
 	motor_set_direction(eDIR_LEFT);
 	motor_set_speed(100);
+	_delay_ms(1600);
+	motor_set_speed(0);
 
 	motor_reset();
 
 	MIN = motor_get_encoder_value();
-	_delay_ms(40);
+	
+	_delay_us(100);
 
 	// go to the right
 	motor_set_direction(eDIR_RIGHT);
 	motor_set_speed(100);
+	_delay_ms(1600);
+
 
 	MAX = motor_get_encoder_value();
 
 
+	_delay_us(100);
+	motor_set_speed(0);
 
+	printf("MIN: %d\r\n", MIN);
+	printf("MAX: %d\r\n", MAX);
 
 	/*int16_t prev_rot = cur_rot+200;
 	while(prev_rot != cur_rot) {

@@ -11,7 +11,7 @@ void solenoid_init(){
 	
 	// Set pin A1 to output
 	set_bit(DDRF, PF1);
-	set_bit(PORTF, PF1);
+	clear_bit(PORTF, PF1);
 }
 
 void solenoid_shoot(){
@@ -19,4 +19,5 @@ void solenoid_shoot(){
 	set_bit(PORTF, PF1);
 	_delay_ms(50);
 	clear_bit(PORTF, PF1);
+	
 }
