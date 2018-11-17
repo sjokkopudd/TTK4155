@@ -23,7 +23,8 @@ typedef enum enMsgId
 	eID_SLIDER_LEFT = 5, 
 	eID_SCORE = 6,
 	eID_START = 7,
-	eID_GAME_OVER = 8
+	eID_GAME_OVER = 8,
+	eID_EXIT_GAME = 9
 }enMsgId;
 
 void can_init();

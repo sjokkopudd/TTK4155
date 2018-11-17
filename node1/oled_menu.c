@@ -481,7 +481,7 @@ void oled_print_game_over(uint16_t score, uint8_t player){
 
 }
 
-void oled_print_best_players(uint16_t * scores_players){
+void oled_print_best_players(uint16_t scores_players[], uint8_t length){
 
 	oled_reset();
 	oled_pos(0,0);
@@ -490,11 +490,15 @@ void oled_print_best_players(uint16_t * scores_players){
 
 	char str[6];
 
-	oled_pos(2,0);
-	oled_print(PLAYER_NAMES[0]);
-	sprintf(str, ": %u",scores_players[0]);
-	oled_pos(2,40);
-	oled_print(str);
+	for(uint8_t i = 0; i < length; i++){
+		uint8_t j = 2+i;
+		oled_pos(j,0);
+		oled_print(PLAYER_NAMES[i]);
+		sprintf(str, ": %u", scores_players[i]);
+		oled_pos(j, 60);
+		oled_print(str);
+
+	}
 
 	/*oled_pos(3,0);
 	oled_print(PLAYER_NAMES[1]);

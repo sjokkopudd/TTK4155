@@ -108,7 +108,7 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 		evt_decrement_player, 
 		evt_increment_player,
 		evt_do_nothing, 
-		evt_exit_leaf, 
+		evt_exit_play, 
 		evt_sel_player, 
 		evt_do_nothing
 
@@ -238,6 +238,7 @@ enStatePinball evt_shoot(){
 
 	can_send_message(message);
 
+
 	return ePLAY;
 
 }
@@ -285,6 +286,8 @@ enStatePinball evt_control_game(){
 	return ePLAY;
 
 }
+
+
 
 //-----------------------------------------------------
 // select menu item
@@ -364,6 +367,28 @@ enStatePinball evt_exit_leaf(void){
 
 }
 
+
+// ---------------------------------------------
+// quit game: go from state ePLAY to eMENU
+// --------------------------------------------
+enStatePinball evt_exit_play(void){
+	//send exit of the game to node2
+
+	message->id = eID_EXIT_GAME;
+	message->length = 1;
+	message->data[0] = 0;
+
+	can_send_message(message);
+
+	_delay_ms(50);
+
+	oled_menu_navigate_back(1);
+
+	oled_highlight_menu();
+
+	return eMENU;
+
+}
 
 // ---------------------------------------------
 // increment difficulty with Joystick up
@@ -528,7 +553,7 @@ void print_animation(void* any/*any animation: enum*/){
 }
 void print_best_players(void){
 
-	oled_print_best_players(highScores);
+	oled_print_best_players(highScores, NUM_PLAYERS);
 }
 
 void print_init_screen(void){

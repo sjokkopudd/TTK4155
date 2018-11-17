@@ -60,7 +60,6 @@ void oled_print_game_over(uint16_t score, uint8_t player);
 void oled_print_players(uint8_t active_player);
 void oled_highlight_player(uint8_t player);
 void oled_select_player(uint8_t player);
-void oled_print_best_players(uint16_t * scores_players);
-
+void oled_print_best_players(uint16_t scores_players[], uint8_t length);
 
 #endif

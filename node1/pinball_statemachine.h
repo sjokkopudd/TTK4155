@@ -61,7 +61,7 @@ enStatePinball evt_decrement_player(void);
 enStatePinball evt_sel_player(void);
 enStatePinball evt_control_game(void);
 enStatePinball evt_shoot(void);
-
+enStatePinball evt_exit_play(void);
 //--------------------------------------------------------
 // pinball game functions
 // -------------------------------------------------------

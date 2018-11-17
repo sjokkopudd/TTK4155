@@ -236,9 +236,16 @@ void process_game(){
 				//start timer to count
 				timer4_start();
 
-				//TODO: init decoder !!!
+				break;
+			case eID_EXIT_GAME:
+				//stop timer to count scores
+				timer4_stop();
+
+				//set game inactive
+				game_is_active = 0;
 
 				break;
+
 			default: break;
 		}
 
@@ -294,9 +301,10 @@ void process_game(){
 				if(!debounce_buffer){
 				//	printf("debounced\n");
 					//stop timer for counting scores
-					timer5_stop();
+					timer4_stop();
 
-					//debounce_buffer = 0xffff;
+					//stop timer to debounce
+					timer5_stop();
 
 					//send game over via can
 					message->id = eID_GAME_OVER;
