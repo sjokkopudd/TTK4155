@@ -27,7 +27,10 @@
 static uint8_t difficulty = 0;
 static uint16_t score = 0;
 
-static uint8_t highScores[NUM_PLAYERS] = {0};
+static uint16_t highScores[NUM_PLAYERS] = {0};
+
+static uint8_t currLeader = 0;
+static uint16_t currHighScore = 0;
 
 static uint8_t player = 0;
 
@@ -202,7 +205,14 @@ static uint8_t handle_responses(){
 
 				if(score > highScores[player]){
 					highScores[player] = score;
-					print_high_score(score);
+					//check if overall highScore
+					if(score > currHighScore){
+						//remember player 
+						currLeader = player;
+						currHighScore = score;
+						print_high_score(score);
+
+					}
 				}
 				_delay_ms(1000);
 
@@ -260,7 +270,7 @@ enStatePinball evt_control_game(){
 
 	can_send_message(message);
 
-	
+	_delay_ms(50);
 	if(!handle_responses()){
 		//game over has been received
 
@@ -296,7 +306,7 @@ enStatePinball evt_select_menu_item(){
 			oled_print_play_mode();
 			return ePLAY;
 		case eSEE_SCORE:
-			//printHighScore();
+			print_best_players();
 			return eSCORE;
 		case eNOLEAF:
 			return eMENU;
@@ -518,6 +528,7 @@ void print_animation(void* any/*any animation: enum*/){
 }
 void print_best_players(void){
 
+	oled_print_best_players(highScores);
 }
 
 void print_init_screen(void){

@@ -17,7 +17,7 @@
 #include "mcp_driver.h"
 #include "MCP2515.h"
 #include "can_communication.h"
-//#include "pwm_music.h"
+#include "pwm_music.h"
 
 
 
@@ -275,7 +275,7 @@ void test(){
 	
 }
 
-/*void test_sound(){
+void test_sound(){
 	init_pwm();
 
 
@@ -287,7 +287,7 @@ void test(){
 
 
 
-}*/
+}
 
 
 int main(){

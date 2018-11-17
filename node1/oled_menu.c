@@ -30,7 +30,7 @@
 #define PLAYER_SELECT_INDENT 80
 #define PLAYER_HIGHLIGHT_ROW_OFFSET 2
 #define MENU_PRINT_INDENT 10
-
+#define NUM_PLAYERS 4
 
 static menu_t* mainMenu;
 static currMenuSelected_t* currMenuSelected;
@@ -48,7 +48,7 @@ static const char* STR_MENU_MAIN = "Main Menu";
 
 
 //only for debug
-//static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
+static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 
 
 //-----------------------------------------------------------
@@ -117,6 +117,9 @@ static enMenuLeaf get_current_menu_leaf(void){
 	}
 	else if(currMenuSelected->menuItem->name == STR_MENU_SCORE){
 		return eSEE_SCORE;
+	}
+	else{
+		return eNOLEAF;
 	}
 
 }
@@ -478,5 +481,40 @@ void oled_print_game_over(uint16_t score, uint8_t player){
 
 }
 
+void oled_print_best_players(uint16_t * scores_players){
+
+	oled_reset();
+	oled_pos(0,0);
+
+	oled_print("Scores");
+
+	char str[6];
+
+	oled_pos(2,0);
+	oled_print(PLAYER_NAMES[0]);
+	sprintf(str, ": %u",scores_players[0]);
+	oled_pos(2,40);
+	oled_print(str);
+
+	/*oled_pos(3,0);
+	oled_print(PLAYER_NAMES[1]);
+	sprintf(str, ": %u",scores_players[1]);
+	oled_pos(3,40);
+	oled_print(str);*/
+
+	/*oled_pos(4,0);
+	oled_print(PLAYER_NAMES[2]);
+	sprintf(str, ": %u",scores_players[2]);
+	oled_pos(4,40);
+	oled_print(str);
+
+	oled_pos(5,0);
+	oled_print(PLAYER_NAMES[3]);
+	sprintf(str, ": %u",scores_players[3]);
+	oled_pos(5,40);
+	oled_print(str);*/
+		
+
+}
 
 
