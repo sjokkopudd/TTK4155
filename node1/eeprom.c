@@ -25,15 +25,18 @@ uint8_t eeprom_read_byte(uint16_t address) {
 
 }
 
-void eeprom_write_byte(uint16_t address, uint8_t data){
+void eeprom_write_byte(uint8_t address, uint8_t data){
 
 	cli();
 	/* 	Wait for completion of previous write*/
 	while(EECR & (1<<EEWE))
 	;
 	/* Set up address and data registers */
-	EEAR = address;
+	clear_bit(EEARH, 0);
+
+	EEARL = address;
 	EEDR = data;
+
 
 	/* 	Write logical one to EEMWE */
 	EECR |= (1<<EEMWE);

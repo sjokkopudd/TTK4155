@@ -277,12 +277,11 @@ void test(){
 
 void test_sound(){
 	init_pwm();
-
+	OCR1A = 3500;
 
 	while(1){
-		button_sound();
-		_delay_ms(4000);
-
+		//button_sound();
+		
 	}
 
 
@@ -311,6 +310,7 @@ int main(){
 
 	//test_sound();
 	ex4_oled_menu();
+
 
 	//ex5_spi_init();
 

@@ -18,10 +18,9 @@ typedef enum enStatePinball {
 	eIDLE, 		//welcome screen on oled 
 	eMENU, 	    //select menu points
 	ePLAYER,	//select player
-	eDIFF, 		//play game
+	eSETTING, 		//play game
 	ePLAY,
 	eSCORE,	//display highscores
-	eRESET //resets high scores
 } enStatePinball;
 
 // --------------------------------------------------------
@@ -55,16 +54,14 @@ enStatePinball evt_select_menu_item(void);
 enStatePinball evt_navigate_up(void);
 enStatePinball evt_navigate_down(void);
 enStatePinball evt_exit_leaf(void);
-enStatePinball evt_increment_diff(void);
-enStatePinball evt_decrement_diff(void);
+enStatePinball evt_increment_sel(void);
+enStatePinball evt_decrement_sel(void);
 enStatePinball evt_increment_player(void);
 enStatePinball evt_decrement_player(void);
 enStatePinball evt_sel_player(void);
 enStatePinball evt_control_game(void);
 enStatePinball evt_shoot(void);
 enStatePinball evt_exit_play(void);
-enStatePinball evt_decrement_sel(void);
-enStatePinball evt_increment_sel(void);
 enStatePinball evt_sel_reset(void);
 //--------------------------------------------------------
 // pinball game functions
@@ -81,7 +78,7 @@ void print_game_over(uint16_t score);
 void print_animation(void* any/*any animation: enum*/);
 void print_best_players(void);
 void print_init_screen(void);
-
+void fetch_scores(void);
 
 
 

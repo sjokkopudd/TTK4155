@@ -2,11 +2,13 @@
 
 #include "pwm_music.h"
 #include "common.h"
-#include "music.h"
+//#include "music.h"
 #include <stdio.h>
 #include <avr/io.h>
 #include <stdint.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
+
 
 void init_pwm(){
 
@@ -19,15 +21,20 @@ void init_pwm(){
   set_bit(TCCR1B, WGM12);
 
   //set output mode non-inverting
-  clear_bit(TCCR1A,COM1A1);
+  set_bit(TCCR1A,COM1A1);
   //set_bit(TCCR1A,COM1A1);
   set_bit(TCCR1A,COM1A0);
 
   //enable output direction of pin 
   set_bit(DDRD, PD5);
 
+  set_bit(TCCR1B, CS11);
+  clear_bit(TCCR1B, CS12);
+  set_bit(TCCR1B, CS10);
+
   //set ICR1 5000 = 20 ms period (TOP)
-  ICR1 = 2000;
+  ICR1 = 5000;
+  sei();
 }
 
 void pwm_start(uint8_t start){

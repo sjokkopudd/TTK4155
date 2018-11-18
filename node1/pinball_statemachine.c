@@ -8,6 +8,7 @@
 #include "string.h"
 #include "uart_driver.h"
 #include "can_communication.h"
+#include "eeprom.h"
 
 #include "util/delay.h"
 
@@ -16,15 +17,13 @@
 #define DEBUG
 #endif*/
 
-#define MINIMUM_DIFFICULTY 0
-#define MAXIMUM_DIFFICULTY 9
 
 #define NUM_PLAYERS 4
 #define LAST_PLAYER 3
 #define FIRST_PLAYER 0
 
 //variable for the difficulty: 0 lowest and 9 highest
-static uint8_t difficulty = 0;
+static uint8_t reset_high_score = 0;
 static uint16_t score = 0;
 
 static uint16_t highScores[NUM_PLAYERS] = {0};
@@ -82,7 +81,6 @@ static const char* testEventArray[] = {"eJOYSTICK_LEFT", "eJOYSTICK_RIGHT", "eJO
 //	eDIFF, 		
 //	eSTART,
 //	eSCORE,	
-//  eRESET
 
 
 
@@ -124,14 +122,14 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 
 	},
 	{
-		//state diff
+		//state setting
 		evt_do_nothing,
 		evt_do_nothing,
-		evt_increment_diff, 
-		evt_decrement_diff,
+		evt_decrement_sel, 
+		evt_increment_sel,
 		evt_do_nothing, 
 		evt_exit_leaf, //TODO -> for actually playing
-		evt_do_nothing, //TODO -> for actually playing
+		evt_sel_reset, //TODO -> for actually playing
 		evt_do_nothing
 
 	},
@@ -156,17 +154,6 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 		evt_exit_leaf,
 		evt_do_nothing,
 		evt_do_nothing
-	},
-	{
-		//state reset scores
-		evt_do_nothing,
-		evt_do_nothing,
-		evt_decrement_sel,
-		evt_increment_sel,
-		evt_do_nothing, 
-		evt_exit_leaf,
-		evt_sel_reset,
-		evt_do_nothing
 	}
 };
 
@@ -189,6 +176,10 @@ enStatePinball evt_do_nothing(){
 enStatePinball evt_start_application(){
 
 	oled_menu_init();
+
+	//initialize the scores by fetching them from eeprom
+	fetch_scores();
+	//reset_eeprom();
 	//print menu to oled
 	oled_print_menu();
 
@@ -226,15 +217,16 @@ static uint8_t handle_responses(){
 			_delay_ms(3000);
 
 			if(score > highScores[player]){
-					highScores[player] = score;
-					//check if overall highScore
-					if(score > currHighScore){
-						//remember player 
-						currLeader = player;
-						currHighScore = score;
-						print_high_score(score);
-						_delay_ms(3000);
-					}
+				save_player_score(player, score);
+				highScores[player] = score;
+				//check if overall highScore
+				if(score > currHighScore){
+					//remember player 
+					currLeader = player;
+					currHighScore = score;
+					print_high_score(score);
+					_delay_ms(3000);
+				}
 			}
 			_delay_ms(1000);
 			
@@ -304,13 +296,15 @@ enStatePinball evt_select_menu_item(){
 			oled_print_players(player);
 			oled_select_player(player);
 			return ePLAYER;
-		case eSET_DIFF: 
-			oled_print_difficulty(difficulty);
-			return eDIFF;
+		case eSET_SETTING: 
+			oled_print_reset_high_scores(reset_high_score);
+			return eSETTING;
 		case eSTART_GAME:
 			oled_reset_score();
 
+			_delay_ms(70);
 			while(!can_receive_message(receive));
+
 
 			//reset score
 			score = 0;
@@ -329,10 +323,6 @@ enStatePinball evt_select_menu_item(){
 		case eSEE_SCORE:
 			print_best_players();
 			return eSCORE;
-		case eRESET_SCORE:
-			oled_print_reset_high_scores(currHighScore,currLeader);
-
-			return eRESET;
 		case eNOLEAF:
 			return eMENU;
 	}
@@ -407,31 +397,31 @@ enStatePinball evt_exit_play(void){
 // ---------------------------------------------
 // increment difficulty with Joystick up
 // ---------------------------------------------
-enStatePinball evt_increment_diff(void){
+enStatePinball evt_increment_sel(void){
 
-	if(difficulty < MAXIMUM_DIFFICULTY){
-		difficulty++;
+	if(!reset_high_score){
+		reset_high_score = 1;
 	}
 
 	// update in oled_menu
-	oled_update_difficulty(difficulty);
+	oled_update_reset_high_scores(reset_high_score);
 
-	return eDIFF;
+	return eSETTING;
 }
 
 
 // ---------------------------------------------
 // decrement difficulty with Joystick down
 // ---------------------------------------------
-enStatePinball evt_decrement_diff(void){
-	if(difficulty > MINIMUM_DIFFICULTY){
-		difficulty--;
+enStatePinball evt_decrement_sel(void){
+	if(reset_high_score){
+		reset_high_score = 0;
 	}
 
 	// update in oled_menu
-	oled_update_difficulty(difficulty);
+	oled_update_reset_high_scores(reset_high_score);
 
-	return eDIFF;
+	return eSETTING;
 }
 
 
@@ -461,46 +451,6 @@ enStatePinball evt_sel_player(void){
 	return ePLAYER;
 
 }
-
-static uint8_t high_score_reset_sel = 0;
-
-enStatePinball evt_increment_sel(void){
-	if(high_score_reset_sel < 1){
-		high_score_reset_sel++;
-	}
-	// update in oled_menu
-	oled_highlight_reset_high_score_selection(high_score_reset_sel);
-
-	return eRESET_SCORE;
-}
-
-enStatePinball evt_decrement_sel(void){
-	if(high_score_reset_sel > 0){
-		high_score_reset_sel--;
-	}
-	// update in oled_menu
-	oled_highlight_reset_high_score_selection(high_score_reset_sel);
-
-
-	return eRESET_SCORE;
-}
-
-
-enStatePinball evt_sel_reset(void){
-	//immediately return to state menu
-	if(high_score_reset_sel){
-		//reset high scores
-		//eeprom_reset();
-	}
-
-	high_score_reset_sel = 0;
-
-
-	return evt_exit_leaf();
-
-}
-
-
 
 
 //--------------------------------------------------------
@@ -615,6 +565,21 @@ void pinball_game_process(void){
 }
 }
 
+enStatePinball evt_sel_reset(void){
+	//immediately return to state menu
+	if(reset_high_score == 1){
+		//reset high scores
+		reset_eeprom();
+		fetch_scores();
+	}
+
+	reset_high_score = 0;
+
+
+	return evt_exit_leaf();
+
+}
+
 // ------------------------------------------------------
 //print functions to oled
 // ------------------------------------------------------
@@ -645,4 +610,14 @@ void print_game_over(uint16_t score){
 void update_play_screen(){
 	//print oled score
 
+}
+
+void fetch_scores(){
+	for (int i = 0; i < 4; i++){
+		highScores[i] = get_player_score(i);
+		if(highScores[i] > currHighScore){
+			currHighScore = highScores[i];
+			currLeader = i;
+		}
+	}
 }
