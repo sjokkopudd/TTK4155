@@ -50,12 +50,11 @@ static game_msg_node1_t msg_start = {1,0,0,0,0};
 static game_msg_node1_t msg_exit = {0,1,0,0,0};
 static game_msg_node1_t msg_data = {0,0,0,0,0};
 
-static game_msg_node2_t msg_reset_node2 = {0};
 
 static void init_position(void);
 
 //only for debug
-static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
+//static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 
 
 
@@ -205,7 +204,7 @@ static uint8_t handle_responses(){
 	if(!can_receive_message(receive)){
 		//read data from receive buffer
 		curr_msg_node2.game_over = receive->data[0];
-		curr_msg_node2.game_score  = receive->data[1] + (receive->data[2] << 8);
+		curr_msg_node2.game_score  = receive->data[1] | (receive->data[2] << 8);
 
 		score = curr_msg_node2.game_score;
 
@@ -227,9 +226,7 @@ static uint8_t handle_responses(){
 			}
 			_delay_ms(1000);
 			
-			//reset receive buffer from node 2
-			curr_msg_node2 = msg_reset_node2;
-
+			
 			return 0;
 
 		}
@@ -299,9 +296,23 @@ enStatePinball evt_select_menu_item(){
 			oled_print_difficulty(difficulty);
 			return eDIFF;
 		case eSTART_GAME:
+			oled_reset_score();
+
+			while(!can_receive_message(receive));
+
+			//reset score
+			score = 0;
+
+			curr_msg_node2.game_score = 0;
+
 			//change current message to start 
 			curr_msg_node1 = msg_start;
+
+
 			oled_print_play_mode();
+
+			//oled_reset_score();
+
 			return ePLAY;
 		case eSEE_SCORE:
 			print_best_players();
@@ -357,6 +368,8 @@ enStatePinball evt_exit_leaf(void){
 	
 	oled_menu_navigate_back(1);
 
+
+
 	oled_highlight_menu();
 
 	return eMENU;
@@ -370,13 +383,7 @@ enStatePinball evt_exit_leaf(void){
 enStatePinball evt_exit_play(void){
 	//send current message to exit game
 	curr_msg_node1 = msg_exit;
-
-	//oled_menu_navigate_back(1);
-
-	//oled_highlight_menu();
-
-	//updated to ePlay -> to send a can message to node2
-	//to stop counting scores and sending to us
+	
 	return ePLAY;
 
 }
@@ -452,6 +459,7 @@ void init_pinball_game(){
 	//send the postion via CAN to node 2
 	message = malloc(sizeof(data_t));
 	receive = malloc(sizeof(data_t));
+	//clear_can_buffer = malloc(sizeof(data_t));
 
 	enCurrState = eIDLE;
 	
@@ -535,7 +543,11 @@ void pinball_game_process(void){
 		_delay_ms(50);
 
 		if(curr_msg_node1.game_exit){
+			score = 0;
+			curr_msg_node2.game_score = 0;
+
 			enCurrState = evt_exit_leaf();
+
 		}
 
 		//check incoming can messages
@@ -544,7 +556,7 @@ void pinball_game_process(void){
 			//update current state as it is now the menu state instead of the play state
 			enCurrState = evt_exit_leaf();	
 		}
-	}
+}
 }
 
 // ------------------------------------------------------

@@ -28,4 +28,6 @@ void oled_write_screen();
 
 void oled_print_trophy();
 
+void oled_game_over();
+
 #endif

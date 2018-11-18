@@ -10,12 +10,11 @@
 #define DEBUG
 #endif*/
 
-#ifndef DEBUG
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "joystick_driver.h"
+#include "number_print.h"
 
-#endif
 
 
 
@@ -48,7 +47,7 @@ static const char* STR_MENU_MAIN = "Main Menu";
 
 
 //only for debug
-static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
+//static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 
 
 //-----------------------------------------------------------
@@ -332,10 +331,16 @@ void oled_print_play_mode(){
 }
 
 void oled_update_score(uint16_t score){
-	char str[2];
-    sprintf(str, "%d",score);
+	char str[5];
+	convert_int_to_string(score,str);
 	oled_pos(4,0);
 	oled_print(str);
+}
+
+void oled_reset_score(){
+
+	oled_clear_line(4);
+
 }
 
 //--------------------------------------------------------
@@ -369,15 +374,12 @@ void oled_print_difficulty(uint8_t difficulty){
 // updates current difficulty in menu
 // ----------------------------------------------------
 void oled_update_difficulty(uint8_t diff){
-	char str[2];
-    sprintf(str, "%d",diff);
+	char str[5];
+	convert_int_to_string(diff,str);
 
-	#ifndef DEBUG
-		oled_pos(5, 100);
-		oled_print(str);
-	#else  
-  		printf("curr diff= %s\n", str);
-  	#endif
+	oled_pos(5, 100);
+	oled_print(str);
+	
 	
 }
 
@@ -448,8 +450,8 @@ void oled_print_high_score(uint16_t score){
 
 	oled_reset();
 
-	oled_pos(1,0);
-	oled_print("NEW HIGHSCORE");
+	oled_pos(0,0);
+	oled_print(" NEW HIGHSCORE");
 
 	oled_print_trophy();
 
@@ -463,23 +465,26 @@ void oled_print_game_over(uint16_t score, uint8_t player){
 	oled_pos(0,0);
 
 	//TODO game over
-	oled_print("GAME OVER");
+	//oled_print("GAME OVER");
+	oled_game_over();
 
-	oled_pos(1,0);
-	oled_print("Scores");
-	oled_pos(2,0);
+	oled_pos(4,0);
 	oled_print("Player:");
-	char str[10];
-    sprintf(str, "%s" ,PLAYER_NAMES[player]);
-	oled_pos(3,0);
-    oled_print(str);
-    char str1[2];
-    sprintf(str1, "%u", score);
-    oled_pos(4,0);
-    oled_print(str1);
+	oled_pos(4,60);
+	oled_print(PLAYER_NAMES[player]);
+
+	oled_pos(5,0);
+	oled_print("Scores:");
+
+    char str[5];
+    convert_int_to_string(score,str);
+    oled_pos(5,60);
+   	oled_print(str);
 
 
 }
+
+
 
 void oled_print_best_players(uint16_t scores_players[], uint8_t length){
 
@@ -488,36 +493,36 @@ void oled_print_best_players(uint16_t scores_players[], uint8_t length){
 
 	oled_print("Scores");
 
-	char str[6];
-
-	for(uint8_t i = 0; i < length; i++){
-		uint8_t j = 2+i;
-		oled_pos(j,0);
-		oled_print(PLAYER_NAMES[i]);
-		sprintf(str, ": %u", scores_players[i]);
-		oled_pos(j, 60);
-		oled_print(str);
-
-	}
-
-	/*oled_pos(3,0);
-	oled_print(PLAYER_NAMES[1]);
-	sprintf(str, ": %u",scores_players[1]);
-	oled_pos(3,40);
-	oled_print(str);*/
-
-	/*oled_pos(4,0);
-	oled_print(PLAYER_NAMES[2]);
-	sprintf(str, ": %u",scores_players[2]);
-	oled_pos(4,40);
+	char str[5];
+	oled_pos(2, 0);
+	oled_print(PLAYER_NAMES[0]);
+	convert_int_to_string(scores_players[0], str);
+	oled_pos(2, 60);
 	oled_print(str);
 
-	oled_pos(5,0);
+
+	//char str1[5];
+	oled_pos(3, 0);
+	oled_print(PLAYER_NAMES[1]);
+	convert_int_to_string(scores_players[1], str);
+	oled_pos(3, 60);
+	oled_print(str);
+
+	//char str2[5];
+	oled_pos(4, 0);
+	oled_print(PLAYER_NAMES[2]);
+	convert_int_to_string(scores_players[2], str);
+	oled_pos(4, 60);
+	oled_print(str);
+
+
+	//char str3[5];
+	oled_pos(5, 0);
 	oled_print(PLAYER_NAMES[3]);
-	sprintf(str, ": %u",scores_players[3]);
-	oled_pos(5,40);
-	oled_print(str);*/
-		
+	convert_int_to_string(scores_players[3], str);
+	oled_pos(5, 60);
+	oled_print(str);
+
 
 }
 

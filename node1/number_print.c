@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "number_print.h"
+
 void swap(char* a, char* b)
 {
  char temp = *a;
@@ -64,3 +66,5 @@ char* itoa(int num, char* str, int base)
 } 
 char* convert_int_to_string(uint16_t val, char* str){
     return itoa(val,str,10);
+
+  }

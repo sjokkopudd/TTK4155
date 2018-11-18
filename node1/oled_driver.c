@@ -188,9 +188,9 @@ void oled_write_screen(){
 
 void oled_print_trophy(){
   //set the segment orientation: SEG0 is col 0
-  oled_pos(3,47);
+  oled_pos(0,47);
   for (int j = 0; j < 4; j++){
-    oled_goto_line(j+4);
+    oled_goto_line(j+2);
     for (int i = 0; i < 32; i++){
       write_d(pgm_read_byte(&trophy[j][i]));
     }
@@ -198,6 +198,15 @@ void oled_print_trophy(){
   }
 }
 
+
+void oled_game_over(){
+  for(int i = 0; i < 2 ; i++){
+    oled_goto_line(i);
+    for(int j = 0; j < 128; j++){
+         write_d(pgm_read_byte(&game_over[i][j]));
+    }
+  }
+}
 
 
 
