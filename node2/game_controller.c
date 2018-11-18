@@ -197,8 +197,12 @@ void process_game(){
 			//set flag to indicate the game over
 			curr_msg_node2.game_over = 1;
 
+
 			
 		}
+
+		
+
 		//update current score
 		curr_msg_node2.game_score = score;
 
