@@ -33,6 +33,7 @@ typedef enum enMenuLeaf
 	eSET_DIFF,
 	eSTART_GAME,
 	eSEE_SCORE,
+	eRESET_SCORE,
 	eNOLEAF
 
 
@@ -55,6 +56,9 @@ void oled_print_difficulty(uint8_t difficulty);
 void oled_print_play_mode(void);
 
 void oled_update_score(uint16_t score);
+void oled_print_reset_high_scores(uint16_t highscore, uint8_t player);
+void oled_highlight_reset_high_score_selection(uint8_t sel);
+
 void oled_reset_score();
 void oled_print_high_score(uint16_t score);
 void oled_print_game_over(uint16_t score, uint8_t player);

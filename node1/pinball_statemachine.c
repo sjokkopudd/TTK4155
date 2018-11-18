@@ -82,6 +82,7 @@ static const char* testEventArray[] = {"eJOYSTICK_LEFT", "eJOYSTICK_RIGHT", "eJO
 //	eDIFF, 		
 //	eSTART,
 //	eSCORE,	
+//  eRESET
 
 
 
@@ -154,6 +155,17 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 		evt_do_nothing, 
 		evt_exit_leaf,
 		evt_do_nothing,
+		evt_do_nothing
+	},
+	{
+		//state reset scores
+		evt_do_nothing,
+		evt_do_nothing,
+		evt_decrement_sel,
+		evt_increment_sel,
+		evt_do_nothing, 
+		evt_exit_leaf,
+		evt_sel_reset,
 		evt_do_nothing
 	}
 };
@@ -317,6 +329,10 @@ enStatePinball evt_select_menu_item(){
 		case eSEE_SCORE:
 			print_best_players();
 			return eSCORE;
+		case eRESET_SCORE:
+			oled_print_reset_high_scores(currHighScore,currLeader);
+
+			return eRESET;
 		case eNOLEAF:
 			return eMENU;
 	}
@@ -445,6 +461,46 @@ enStatePinball evt_sel_player(void){
 	return ePLAYER;
 
 }
+
+static uint8_t high_score_reset_sel = 0;
+
+enStatePinball evt_increment_sel(void){
+	if(high_score_reset_sel < 1){
+		high_score_reset_sel++;
+	}
+	// update in oled_menu
+	oled_highlight_reset_high_score_selection(high_score_reset_sel);
+
+	return eRESET_SCORE;
+}
+
+enStatePinball evt_decrement_sel(void){
+	if(high_score_reset_sel > 0){
+		high_score_reset_sel--;
+	}
+	// update in oled_menu
+	oled_highlight_reset_high_score_selection(high_score_reset_sel);
+
+
+	return eRESET_SCORE;
+}
+
+
+enStatePinball evt_sel_reset(void){
+	//immediately return to state menu
+	if(high_score_reset_sel){
+		//reset high scores
+		//eeprom_reset();
+	}
+
+	high_score_reset_sel = 0;
+
+
+	return evt_exit_leaf();
+
+}
+
+
 
 
 //--------------------------------------------------------

@@ -28,6 +28,9 @@
 #define PLAYER_HIGHLIGHT_INDENT 100
 #define PLAYER_SELECT_INDENT 80
 #define PLAYER_HIGHLIGHT_ROW_OFFSET 2
+
+#define RESET_SCORE_SELECT_INDENT 80
+#define RESET_SCORE_ROW_OFFSET 3
 #define MENU_PRINT_INDENT 10
 #define NUM_PLAYERS 4
 
@@ -39,6 +42,8 @@ static const char* STR_MENU_PLAY = "Play";
 static const char* STR_MENU_START = "Start";
 static const char* STR_MENU_SCORE= "Score";
 static const char* STR_MENU_DIFFICULTY= "Difficulty";
+static const char* STR_MENU_SETTING = "Settings";
+static const char* STR_MENU_RESET = "Reset Scores";
 static const char* STR_MENU_PLAYER= "Player";
 
 static const char* PLAYER_NAMES[] = {"Link", "Sonic", "Waluigi", "Samus"};
@@ -117,11 +122,15 @@ static enMenuLeaf get_current_menu_leaf(void){
 	else if(currMenuSelected->menuItem->name == STR_MENU_SCORE){
 		return eSEE_SCORE;
 	}
+	else if(currMenuSelected->menuItem->name == STR_MENU_RESET){
+		return eRESET_SCORE;
+	}
 	else{
 		return eNOLEAF;
 	}
-
 }
+
+
 
 
 // ----------------------------------------------------------
@@ -190,8 +199,11 @@ void oled_menu_navigate_back(uint8_t isLeaf){
 			currMenuSelected->menuItem = currMenuSelected->menuItem->parent;
 		}
 	}
+	currMenuSelected->row = 1;
 	//print new menu
 	oled_print_menu();
+
+
 }
 
 // ----------------------------------------------------------
@@ -308,10 +320,14 @@ void oled_menu_init(void){
 	mainMenu = new_menu_item(NULL, STR_MENU_MAIN);
     menu_t* play = add_child(mainMenu, STR_MENU_PLAY);
     add_child(play, STR_MENU_PLAYER);		 // add sub menu player to play menu
-    add_child(play, STR_MENU_DIFFICULTY); 	 // add sub menu difficulty to play menu
     add_child(play, STR_MENU_START);		 // add sub menu start to play menu
 
-    add_child(mainMenu, STR_MENU_SCORE);	 // add score to main menu
+    add_child(mainMenu, STR_MENU_SCORE);
+
+    menu_t* setting = add_child(mainMenu, STR_MENU_SETTING);	 // add score to main menu
+    add_child(setting, STR_MENU_DIFFICULTY);
+    add_child(setting, STR_MENU_RESET);
+
 
     currMenuSelected = malloc(sizeof(currMenuSelected_t));
     currMenuSelected->menuItem = mainMenu->child;
@@ -523,6 +539,39 @@ void oled_print_best_players(uint16_t scores_players[], uint8_t length){
 	oled_pos(5, 60);
 	oled_print(str);
 
+
+}
+
+
+void oled_highlight_reset_high_score_selection(uint8_t sel){
+	static uint8_t lastSel = 0;
+
+	if(lastSel != sel){
+
+		//delete old position
+		oled_pos(lastSel+RESET_SCORE_ROW_OFFSET, PLAYER_HIGHLIGHT_INDENT);
+		oled_print(" ");
+		lastSel = sel;
+
+	}
+	
+    oled_pos(sel+RESET_SCORE_ROW_OFFSET, PLAYER_HIGHLIGHT_INDENT);
+    oled_print(">");
+}
+
+
+
+void oled_print_reset_high_scores(uint16_t highscore, uint8_t player){
+	oled_reset();
+	oled_pos(0,0);
+
+	oled_print("Reset highscores");
+	oled_pos(1,0);
+	oled_print("Are you sure?");
+	oled_pos(3,0);
+	oled_print("Yes");
+	oled_pos(4,0);
+	oled_print("No");
 
 }
 
