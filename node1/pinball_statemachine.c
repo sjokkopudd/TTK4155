@@ -50,6 +50,7 @@ static game_msg_node1_t msg_start = {1,0,0,0,0};
 static game_msg_node1_t msg_exit = {0,1,0,0,0};
 static game_msg_node1_t msg_data = {0,0,0,0,0};
 
+static game_msg_node2_t msg_reset_node2 = {0};
 
 static void init_position(void);
 
@@ -220,13 +221,15 @@ static uint8_t handle_responses(){
 						//remember player 
 						currLeader = player;
 						currHighScore = score;
-						//print_high_score(score);
-						//_delay_ms(3000);
+						print_high_score(score);
+						_delay_ms(3000);
 					}
 			}
 			_delay_ms(1000);
 			
-			
+			//reset receive buffer from node 2
+			curr_msg_node2 = msg_reset_node2;
+
 			return 0;
 
 		}
@@ -298,7 +301,6 @@ enStatePinball evt_select_menu_item(){
 		case eSTART_GAME:
 			//change current message to start 
 			curr_msg_node1 = msg_start;
-
 			oled_print_play_mode();
 			return ePLAY;
 		case eSEE_SCORE:
