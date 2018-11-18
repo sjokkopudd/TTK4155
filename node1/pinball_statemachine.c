@@ -117,7 +117,7 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 		evt_decrement_player, 
 		evt_increment_player,
 		evt_do_nothing, 
-		evt_exit_play, 
+		evt_exit_leaf, 
 		evt_sel_player, 
 		evt_do_nothing
 
@@ -369,11 +369,13 @@ enStatePinball evt_exit_play(void){
 	//send current message to exit game
 	curr_msg_node1 = msg_exit;
 
-	oled_menu_navigate_back(1);
+	//oled_menu_navigate_back(1);
 
-	oled_highlight_menu();
+	//oled_highlight_menu();
 
-	return eMENU;
+	//updated to ePlay -> to send a can message to node2
+	//to stop counting scores and sending to us
+	return ePLAY;
 
 }
 
@@ -530,8 +532,12 @@ void pinball_game_process(void){
 
 		_delay_ms(50);
 
+		if(curr_msg_node1.game_exit){
+			enCurrState = evt_exit_leaf();
+		}
+
 		//check incoming can messages
-		if(!handle_responses()){
+		else if(!handle_responses()){
 			//game over has been received
 			//update current state as it is now the menu state instead of the play state
 			enCurrState = evt_exit_leaf();	
