@@ -29,6 +29,9 @@ volatile uint16_t debounce_buffer;
 static game_msg_node1_t curr_msg_node1 = {0};
 static game_msg_node2_t curr_msg_node2 = {0};
 
+static game_msg_node2_t msg_reset ={0};
+
+
 // ----------------------------------------------------------------
 // using timer 4 to debounce the score counting
 // ---------------------------------------------------------------
@@ -134,8 +137,15 @@ void process_game(){
 		curr_msg_node1.game_slider = receive->data[4];
 
 		if(curr_msg_node1.game_start){
+			printf("node 2 got start\r\n");
 			//reset score
 			score = 0;
+
+			//reset scores and game over
+			curr_msg_node2 = msg_reset;
+
+			printf("curr_msg_node2.game over: %d\r\n", curr_msg_node2.game_over);
+			printf("curr_msg_node2.score: %d\r\n", curr_msg_node2.game_score);
 
 			//set game is active flag
 			game_is_active = 1;
@@ -195,6 +205,8 @@ void process_game(){
 		message->data[2] = (curr_msg_node2.game_score  >> 8);
 
 		can_send_message(message);
+
+		printf("node 2 sending \r\n");
 		
 
 	}
