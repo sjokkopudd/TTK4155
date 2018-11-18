@@ -188,7 +188,7 @@ void oled_write_screen(){
 
 void oled_print_trophy(){
   //set the segment orientation: SEG0 is col 0
-  oled_pos(4,47);
+  oled_pos(3,47);
   for (int j = 0; j < 4; j++){
     oled_goto_line(j+4);
     for (int i = 0; i < 32; i++){

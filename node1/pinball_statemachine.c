@@ -141,7 +141,7 @@ fPtr const evtHndlTable[][MAX_EVENTS] = {
 		evt_do_nothing,
 		evt_do_nothing,
 		evt_do_nothing, 
-		evt_exit_leaf,
+		evt_exit_play,
 		evt_shoot,
 		evt_control_game
 	},
@@ -220,16 +220,21 @@ static uint8_t handle_responses(){
 						//remember player 
 						currLeader = player;
 						currHighScore = score;
-						print_high_score(score);
-						_delay_ms(3000);
+						//print_high_score(score);
+						//_delay_ms(3000);
 					}
 			}
 			_delay_ms(1000);
+			
+			
 			return 0;
 
 		}
-		//update oled with current score
-		oled_update_score(score);
+
+		else{
+			//update oled with current score
+			oled_update_score(score);
+		}
 	}
 
 	return 1;
@@ -347,6 +352,7 @@ enStatePinball evt_exit_leaf(void){
 	// 				 Difficulty
 	//				 Start
 	//
+	
 	oled_menu_navigate_back(1);
 
 	oled_highlight_menu();
@@ -506,29 +512,30 @@ void pinball_game_process(void){
 	static uint8_t cnt = 0;
 	enStateEvent currEvent;
 	currEvent = get_event();
-	currEvent = debug_events[cnt];
 	//function call, pointed to by current state and event (matrix)
 	enCurrState = (* evtHndlTable[enCurrState][currEvent])();
 
-	//send can messages to node2
-	message->id = eID_NODE1;
-	message->length = 5;
-	message->data[0] = curr_msg_node1.game_start;
-	message->data[1] = curr_msg_node1.game_exit;
-	message->data[2] = curr_msg_node1.game_shoot;
-	message->data[3] = curr_msg_node1.game_joy;
-	message->data[4] = curr_msg_node1.game_slider;
+	if(enCurrState == ePLAY){
+		//send can messages to node2
+		message->id = eID_NODE1;
+		message->length = 5;
+		message->data[0] = curr_msg_node1.game_start;
+		message->data[1] = curr_msg_node1.game_exit;
+		message->data[2] = curr_msg_node1.game_shoot;
+		message->data[3] = curr_msg_node1.game_joy;
+		message->data[4] = curr_msg_node1.game_slider;
 
 
-	can_send_message(message);
+		can_send_message(message);
 
-	_delay_ms(50);
+		_delay_ms(50);
 
-	//check incoming can messages
-	if(!handle_responses()){
-		//game over has been received
-		//update current state as it is now the menu state instead of the play state
-		enCurrState = evt_exit_leaf();	
+		//check incoming can messages
+		if(!handle_responses()){
+			//game over has been received
+			//update current state as it is now the menu state instead of the play state
+			enCurrState = evt_exit_leaf();	
+		}
 	}
 }
 

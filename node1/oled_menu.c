@@ -449,7 +449,7 @@ void oled_print_high_score(uint16_t score){
 	oled_reset();
 
 	oled_pos(1,0);
-	oled_print(" NEW HIGHSCORE");
+	oled_print("NEW HIGHSCORE");
 
 	oled_print_trophy();
 
