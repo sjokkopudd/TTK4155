@@ -139,8 +139,9 @@ void process_game(){
 		if(curr_msg_node1.game_start){
 			printf("node 2 got start\r\n");
 			//reset score
-			score = 0;
+			curr_msg_node2.game_score = 0;
 
+			score = 0;
 			//reset scores and game over
 			curr_msg_node2 = msg_reset;
 
@@ -157,6 +158,9 @@ void process_game(){
 		else if(curr_msg_node1.game_exit){
 			//set game inactive
 			game_is_active = 0; 
+
+			curr_msg_node2.game_score = 0;
+			score = 0;
 
 			//stop timer to count scores
 			timer4_stop();

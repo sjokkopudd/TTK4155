@@ -15,46 +15,53 @@
 
 volatile int16_t ref_position = 127;
 //static double motor_position_middle = 0;
-static double Kp = 1; //2;
+static double Kp = 4; //2;
 static double Ki = 0.001; //4;
-static double Kd = 0.001;//0.1;
+static double Kd = 0.06;//0.1;
 volatile int16_t integral = 0;
 volatile int16_t prev_error = 0;
-static double dt = 0.02;//0.016;
+static double dt = 0.012;//0.016;
 
 void PID_controller(){
     double encoder = motor_get_encoder_value()*(255./get_MAX());
-   // printf("encoder_raw: %d\r\n",motor_get_encoder_value());
+   //printf("encoder_raw: %d\r\n",motor_get_encoder_value());
     //printf("ref_position: %d\r\n", ref_position);
 	int16_t error = ref_position - encoder;
 	//printf("error: %d\r\n", error);
 	integral += error;
 
-	if (error < 1){
+	if (error < 10){
 		integral = 0;
 	}
 
 	int16_t u = Kp*error + Ki*dt*integral + (Kd/dt)*(error - prev_error);
 
 	prev_error = error;
+	printf("u: %d\r\n", u);
 
 	if (u < 0){
 		//set direction to left
 		motor_set_direction(eDIR_LEFT);
-		if (abs(u) > 100){
-			u = 100;
+		if (abs(u) > 150){
+			u = 150;
 		}
-		
+		else if (abs(u) < 50 & abs(u) > 20){
+			u = 30;
+		}		
 	}
 	else{
 		//set direction to right
 		motor_set_direction(eDIR_RIGHT);
-		if (abs(u) > 100){
-			u = 100;
+		if (abs(u) > 150){
+			u = 150;
+		}
+		else if (abs(u) < 50 & abs(u) > 20){
+			u = 50;
 		}
 	}
-	dac_send(u);
-	//printf("u: %d\r\n", u);
+
+	dac_send(abs(u));
+	printf("u_after: %d\r\n", u);
 }
 
 ISR(TIMER3_OVF_vect){
@@ -143,7 +150,7 @@ void PID_init(){
 	set_bit(TCCR3B, CS32);
 
 	//set the counter to enable flag every 40ms
-	ICR3 = 1250;
+	ICR3 = 750;
 
 	printf("pid init done\n");
 

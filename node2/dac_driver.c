@@ -24,6 +24,6 @@ void dac_send(unsigned char data){
 	//printf("before send \r\n");
 	//TWCR = (0<<TWIE);
 	TWI_Start_Transceiver_With_Data(msg, 3);
-	_delay_us(70);
+	_delay_us(100);
 
 }
