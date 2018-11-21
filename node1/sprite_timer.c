@@ -10,8 +10,9 @@
 #include <avr/interrupt.h>
 #include <stdio.h>
 #include <avr/pgmspace.h>
+#include "common.h"
 
-volatile frame_counter = 0;
+volatile int frame_counter = 0;
 
 void sprite_timer_init(){
 
@@ -20,7 +21,7 @@ void sprite_timer_init(){
 	clear_bit(TCCR0, WGM01);
 
 	//OC0 disconnected
-	clear_bit(TCCR0, COM0);
+	clear_bit(TCCR0, COM00);
 	clear_bit(TCCR0, COM01);
 
 	//Set clock prescaler to Fcpu/1024
@@ -35,10 +36,11 @@ void sprite_timer_init(){
 }
 
 ISR(TIMER0_OVF_vect){
-	if (frame_counter == 5){
+	if (frame_counter == 10){
 		frame_counter = 0;
 	}
-	oled_print_firework(frame_counter);
+	oled_print_firework(frame_counter/2);
+	frame_counter ++;
 }
 
 void disable_sprite_timer(){

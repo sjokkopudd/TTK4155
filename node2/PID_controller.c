@@ -14,20 +14,16 @@
 
 
 volatile int16_t ref_position = 127;
-//static double motor_position_middle = 0;
-static double Kp = 4; //2;
-static double Ki = 0.001; //4;
-static double Kd = 0.06;//0.1;
+static double Kp = 4;
+static double Ki = 0.001;
+static double Kd = 0.06;
 volatile int16_t integral = 0;
 volatile int16_t prev_error = 0;
-static double dt = 0.012;//0.016;
+static double dt = 0.012;
 
 void PID_controller(){
     double encoder = motor_get_encoder_value()*(255./get_MAX());
-   //printf("encoder_raw: %d\r\n",motor_get_encoder_value());
-    //printf("ref_position: %d\r\n", ref_position);
 	int16_t error = ref_position - encoder;
-	//printf("error: %d\r\n", error);
 	integral += error;
 
 	if (error < 10){
@@ -37,7 +33,6 @@ void PID_controller(){
 	int16_t u = Kp*error + Ki*dt*integral + (Kd/dt)*(error - prev_error);
 
 	prev_error = error;
-	printf("u: %d\r\n", u);
 
 	if (u < 0){
 		//set direction to left
@@ -61,72 +56,15 @@ void PID_controller(){
 	}
 
 	dac_send(abs(u));
-	printf("u_after: %d\r\n", u);
 }
 
 ISR(TIMER3_OVF_vect){
 
-//	printf("in interrupt\n");
-
 	PID_controller();
-
-	/*double encoder = motor_get_encoder_value()*(255./get_MAX());
-   // printf("encoder_raw: %d\r\n",motor_get_encoder_value());
-   // printf("ref_position: %d\r\n", ref_position);
-	int16_t error = ref_position - encoder;
-	//printf("error: %d\r\n", error);
-	integral += error;
-
-	if (error < 1){
-		integral = 0;
-	}
-
-	int16_t u = Kp*error + Ki*dt*integral + (Kd/dt)*(error - prev_error);
-
-	prev_error = error;
-
-	if (u < 0){
-		//set direction to left
-		motor_set_direction(eDIR_LEFT);
-		if (abs(u) > 100){
-			u = 100;
-		}
-		
-	}
-	else{
-		//set direction to right
-		motor_set_direction(eDIR_RIGHT);
-		if (abs(u) > 100){
-			u = 100;
-		}
-	}
-	dac_send(u);
-	printf("u: %d\r\n", u);
-	
-	*/
 
 }
 
 void PID_init(){
-	
-	 //motor_position_middle = -(get_MAX() + get_MIN()) / 2;
-	
-	/*//-------------INITIALIZE TIMER INPUT-----------------
-	
-	// Disable global interrupts
-	cli();
-	
-	// enable timer overflow interrupt for Timer2
-	TIMSK2=(1<<TOIE2);
-	
-	// start timer2 with /1024 prescaler
-	
-	TCCR2B = (1<<CS20) | (1<<CS21) | (1<<CS22);
-	
-	// Enable global interrupts
-	sei();
-	
-	//---------------------------------------------------*/
 
 	 // Disable global interrupts
 	cli();
@@ -152,8 +90,6 @@ void PID_init(){
 	//set the counter to enable flag every 40ms
 	ICR3 = 750;
 
-	printf("pid init done\n");
-
 	//enable global interrupts
 	sei();
 
@@ -164,26 +100,3 @@ void PID_update_reference(uint8_t pos){
 	ref_position = (int16_t)pos;
 
 }
-
-/*void PID_update(difficulty_t difficulty){
-	
-	switch (difficulty){
-		case EASY:
-			Kp = 2.5;
-			Ki = 2;
-			Kd = 0.1;
-			break;
-		case MEDIUM:
-			Kp = 2;
-			Ki = 4;
-			Kd = 0.1;
-			break;
-		case HARD:
-			Kp = 2;
-			Ki = 4;
-			Kd = 0.1;
-			break;
-		}
-}*/
-
-

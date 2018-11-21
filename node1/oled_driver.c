@@ -105,7 +105,6 @@ void oled_home(void){
 void oled_goto_line(uint8_t line){
   //check borders
   if(line >= PAGE_COUNT || line < 0){
-    //do nothing or jump to line 0 ??
 
     return;
 
@@ -190,7 +189,7 @@ void oled_print_trophy(){
   //set the segment orientation: SEG0 is col 0
   oled_pos(0,47);
   for (int j = 0; j < 4; j++){
-    oled_goto_line(j+2);
+    oled_goto_line(j+3);
     for (int i = 0; i < 32; i++){
       write_d(pgm_read_byte(&trophy[j][i]));
     }
@@ -208,8 +207,25 @@ void oled_game_over(){
   }
 }
 
+void oled_print_firework(int frame){
+  oled_pos(3,30);
+  for (int i = 0; i < 8; i++){
+    write_d(pgm_read_byte(&firework[frame][i]));
+  }
 
+  oled_pos(3,90);
+  for (int i = 0; i < 8; i++){
+    write_d(pgm_read_byte(&firework[frame][i]));
+  }
 
-void oled_set_brightness(uint8_t lvl){
+  oled_pos(4,80);
+  for (int i = 0; i < 8; i++){
+    write_d(pgm_read_byte(&firework[frame][i]));
+  }
 
+  oled_pos(2,60);
+  for (int i = 0; i < 8; i++){
+    write_d(pgm_read_byte(&firework[frame][i]));
+  }
 }
+

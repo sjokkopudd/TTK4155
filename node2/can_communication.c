@@ -46,8 +46,6 @@ void can_init(){
 	//set rx0 interrupt
 	mcp_bit_modify(MCP_CANINTE, MCP_RX0IF, 1);
 
-	
-
 }
 
 
@@ -127,21 +125,3 @@ int can_receive_message(data_t* message_to_receive){
 
 }
 
-/*static int can_error(){
-	uint8_t error = mcp_read(MCP_TXB0CTRL);
-
-	//transmission detected error
-	if(test_bit(error, 4 )){
-		printf("Error in transmission\n");
-		return -1;
-	}
-
-	if(test_bit(error, MCP_TXMLOA)){
-		printf("Error in arbitration\n");
-		return -2;
-	}
-
-
-
-	return 0;
-}*/

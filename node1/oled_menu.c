@@ -6,23 +6,10 @@
 #include <stdio.h>
 
 #include "uart_driver.h"
-/*#ifndef DEBUG
-#define DEBUG
-#endif*/
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "joystick_driver.h"
 #include "number_print.h"
-
-
-
-
-// -------------------------------------
-// DEBUG define only for testing oled_menu.h, 
-// oled_menu.c, pinpall_statemachine.c and pinball_statemachine.h
-// -----------------------------------
-
 
 #define MENU_HIGHLIGHT_INDENT 100
 #define PLAYER_HIGHLIGHT_INDENT 100
@@ -47,10 +34,6 @@ static const char* STR_MENU_PLAYER= "Player";
 static const char* PLAYER_NAMES[] = {"Link", "Sonic", "Waluigi", "Samus"};
 
 static const char* STR_MENU_MAIN = "Main Menu";
-
-
-//only for debug
-//static FILE uart_stream  = FDEV_SETUP_STREAM (uart_transmit, NULL, _FDEV_SETUP_WRITE);
 
 
 //-----------------------------------------------------------
@@ -224,9 +207,6 @@ void oled_menu_navigate_down(void){
 void oled_highlight_menu(void){
 	// remember old row to clean
 	static uint8_t idx_row = 1;
-	//TODO: add function to write to oled -> invert font color
-	// and background color at that row
-	//oled(currMenuSelected->row;
 	#ifndef DEBUG
 		oled_pos(idx_row,MENU_HIGHLIGHT_INDENT);
 		oled_print(" ");
@@ -303,12 +283,6 @@ void oled_print_menu(void){
 // -----------------------------------------------------------
 void oled_menu_init(void){
 
-	//set selected menu item to main item 
-	//menuSel = eMENU_MAIN;
-	
-	//create menu entries
-	//menu_t* start_screen = create_menu("Start Screen", NULL);
-
 	//create menu tree
 	mainMenu = new_menu_item(NULL, STR_MENU_MAIN);
     menu_t* play = add_child(mainMenu, STR_MENU_PLAY);
@@ -349,9 +323,6 @@ void oled_reset_score(){
 
 }
 
-//--------------------------------------------------------
-// prints difficulty to menu
-//--------------------------------------------------------
 void oled_print_reset_high_scores(uint8_t sel){
 	oled_reset();
 	oled_pos(0,0);
@@ -368,9 +339,6 @@ void oled_print_reset_high_scores(uint8_t sel){
 	
 }
 
-// ----------------------------------------------------
-// updates current difficulty in menu
-// ----------------------------------------------------
 void oled_update_reset_high_scores(uint8_t sel){
 	static uint8_t lastSel = 0;
 
@@ -385,8 +353,7 @@ void oled_update_reset_high_scores(uint8_t sel){
 	
     oled_pos(sel+RESET_SCORE_ROW_OFFSET, PLAYER_HIGHLIGHT_INDENT);
 	oled_print(">");
-	
-	
+		
 }
 
 // ---------------------------------------------------
@@ -470,8 +437,6 @@ void oled_print_game_over(uint16_t score, uint8_t player){
 	oled_reset();
 	oled_pos(0,0);
 
-	//TODO game over
-	//oled_print("GAME OVER");
 	oled_game_over();
 
 	oled_pos(4,0);
@@ -506,29 +471,23 @@ void oled_print_best_players(uint16_t scores_players[], uint8_t length){
 	oled_pos(2, 60);
 	oled_print(str);
 
-
-	//char str1[5];
 	oled_pos(3, 0);
 	oled_print(PLAYER_NAMES[1]);
 	convert_int_to_string(scores_players[1], str);
 	oled_pos(3, 60);
 	oled_print(str);
 
-	//char str2[5];
 	oled_pos(4, 0);
 	oled_print(PLAYER_NAMES[2]);
 	convert_int_to_string(scores_players[2], str);
 	oled_pos(4, 60);
 	oled_print(str);
 
-
-	//char str3[5];
 	oled_pos(5, 0);
 	oled_print(PLAYER_NAMES[3]);
 	convert_int_to_string(scores_players[3], str);
 	oled_pos(5, 60);
 	oled_print(str);
-
 
 }
 

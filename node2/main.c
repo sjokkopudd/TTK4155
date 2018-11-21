@@ -20,7 +20,6 @@
 #include "dac_driver.h"
 #include "motor_driver_v2.h"
 #include "solenoid_driver.h"
-//#include "timer.h"
 #include "PID_controller.h"
 #include "common.h"
 
@@ -31,249 +30,23 @@ static char* enumStrings[] = {"left", "right", "up", "down", "neutral"};
 
 unsigned long clock_speed = F_CPU;
  
-void ex6_uart_init(){
-
-	//uart_init(clock_speed);
-
-	stdout = &uart_stream;
-
-	while(1){
-
-
-		printf("Hello from node 2\r\n");
-
-		_delay_ms(2000);
-
-	}
-
-}
-
-
-// --------------------------------------------
-// test spi interface - send and read test byte
-// --------------------------------------------d
-void ex6_spi_init(){
-
-
-	can_init();
-	data_t* message = malloc(sizeof(data_t));
-	data_t* receive = malloc(sizeof(data_t));
-
-	message->id = 1;
-	message-> length = 5;
-
-	
-	message->data[0] = 'H';
-	message->data[1] = 'a';
-	message->data[2] = 'l';
-	message->data[3] = 'l';
-	message->data[4] = 'o';
-
-	stdout = &uart_stream;
-
-	
-
-	
-	while(1){
-
-	
-		/*if(can_send_message(message)){
-			printf("Error in sending messages\r\n");
-		}
-		else{*/
-		_delay_ms(1000);
-		if(!can_receive_message(receive)){
-
-			printf("Node 2 received message: ");
-			
-			for (int i = 0; i < receive->length; ++i){
-				printf("%c", receive->data[i]);	
-			}
-			printf("\r\n");
-		}
-				
-			
-		//}
-
-		//test mcp
-		/*for (int i = 0; i < message->length; i++) {
-			mcp_write( MCP_TXB0D0 + i, message->data[i]);
-		}
-
-
-
-		//read from that register
-		for (int i = 0; i < 5; ++i)
-		{
-			receive->data[i] = mcp_read(MCP_RXB0D0 + i);
-		}
-
-		printf("receive->data%s\n",receive->data )*/
-		
-
-		/*clear_bit(PORTB, PB4);
-
-
-		//send message
-		SPI_write(0b10101010);
-
-
-		char data = SPI_read();
-
-		//deactivate slave
-		set_bit(PORTB, PB4);
-
-		printf("data received: %d\r\n", data);*/
-
-
-		_delay_ms(2000);
-	}
-
-}
-
-void test_motor(){
-	stdout = &uart_stream;
-	can_init();
-	dac_init();
-	adc_2_init();
-	init_pwm();
-	init_game_controller();
-
-	motor_init();
-	PID_init();
-
-	while(1){
-	_delay_ms(5000);
-			
-
-			_delay_ms(5000);
-
-
-
-	}
-
-
-}
-void ex7_pwm_pulse(){
-	stdout = &uart_stream;
-	can_init();
-	dac_init();
-	adc_2_init();
-	init_pwm();
-	init_game_controller();
-	//dac_send(0);
-	//_delay_ms(5000);
-	motor_init();
-	PID_init();
-	while(1){
-
-		/*if(check_collision()){
-			printf("collision detected \r\n");
-
-			printf("ir value: %u\r\n", get_IR_value());
-		}
-
-		printf("ir value: %u\r\n", get_IR_value());*/
-		//printf("in while\n");
-		/*update_motor_with_u(-100);
-		_delay_ms(1000);
-		update_motor_with_u(100);
-		_delay_ms(1000);*/
-		//encoder_reset();
-		process_game();
-		//_delay_ms(4000);
-	}
-
-
-}
-
-void ex7_test(){
-	stdout = &uart_stream;
-	can_init();
-	dac_init();
-	adc_2_init();
-	init_pwm();
-	//init_game_controller();
-	motor_init();
-	set_bit(DDRH, PH4);
-	while(1){
-			
-		//encoder_reset();
-		_delay_ms(2000);
-
-	}
-}
-
-void ex7_ir_value(){
-	stdout = &uart_stream;
-	adc_2_init();
-
-
-
-	while(1){
-	
-		if (check_collision()){
-			printf("collision \r\n");
-		}
-		
-		_delay_ms(20);
-
-	}
-
-
-}
-
-void ex8_dac(){
-	dac_init();
-	unsigned char data;
-	while(1){
-		data = 0b00000000;
-		dac_send(data);
-		_delay_ms(2000);
-		data = 0b01111111;
-		dac_send(data);
-		_delay_ms(2000);
-		data = 0b11111111;
-		dac_send(data);
-		_delay_ms(2000);
-	}
-}
-
 
 int main(){
 	
-	unsigned long clock_speed = F_CPU;
-
 	uart_init(clock_speed);
+	stdout = &uart_stream;
 
-
-
-	//ex7_ir_value();
-
-
-	//ex6_uart_init();
-
-
-	//ex6_spi_init();
-
-	//printf("is changing pulse\r\n");
-
-	
-	//x7_pwm_pulse();
-	//ex7_ir_value();
-	//test_timer();
-
-	ex7_pwm_pulse();
-
-
-	//test_motor();
-
-
-
-	//ex7_test();
-
-	//ex8_dac();
-	//test();
+	can_init();
+	dac_init();
+	adc_2_init();
+	init_pwm();
+	init_game_controller();
+	motor_init();
+	PID_init();
+	while(1){
+		
+		process_game();
+	}
 
 	return 0;
 }

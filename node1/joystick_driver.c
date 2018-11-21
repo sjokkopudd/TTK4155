@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <avr/io.h>
 #include "common.h"
+#include "pwm_buzzer.h"
 
 #define THRESH_DIR 50
 
@@ -24,21 +25,7 @@ static uint8_t min_pos_x = 0;
 static uint8_t min_pos_y = 0;
 
 
-/*static uint8_t joystick_fine_calibrate(adc_channel_t channel){
-	uint8_t cnt = 0;
-	uint8_t lastPos = adc_read_channel(channel);
-	while(cnt < 3){
-		uint8_t currPos = adc_read_channel(channel);
-		if(currPos == lastPos){
-			cnt++;
-		}
-		else{
-			cnt = 0;
-		}
-		lastPos = currPos;
-	}
-	return lastPos;
-}*/
+
 
 // init function - with calibration
 void joystick_init(void){

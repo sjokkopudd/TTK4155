@@ -3,7 +3,7 @@
 #include "game_controller.h"
 #include "can_communication.h"
 #include "PWM_driver.h"
-#include "motor_driver.h"
+#include "motor_driver_v2.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "util/delay.h"
@@ -55,7 +55,6 @@ static void timer4_init(){
 	clear_bit(TCCR4B, CS11);
 	set_bit(TCCR4B, CS12);
 
-	//set_bit(TIMSK4, TOIE4);
 
 
 	ICR4 = 3125; //timer overflow every 200ms
@@ -95,7 +94,6 @@ ISR(TIMER4_OVF_vect){
 
 static void update_servo(uint8_t val){
 
-	//printf("update servo val: %d\n", val);
 	//update servo position
 	generate_pulse_servo(val);
 
@@ -137,16 +135,12 @@ void process_game(){
 		curr_msg_node1.game_slider = receive->data[4];
 
 		if(curr_msg_node1.game_start){
-			printf("node 2 got start\r\n");
 			//reset score
 			curr_msg_node2.game_score = 0;
 
 			score = 0;
 			//reset scores and game over
 			curr_msg_node2 = msg_reset;
-
-			printf("curr_msg_node2.game over: %d\r\n", curr_msg_node2.game_over);
-			printf("curr_msg_node2.score: %d\r\n", curr_msg_node2.game_score);
 
 			//set game is active flag
 			game_is_active = 1;
@@ -186,9 +180,7 @@ void process_game(){
 
 	//updating score and check if collision has been detected > only if 
 	if(game_is_active){
-		printf("ir_value: %u\r\n", get_IR_value());
 		if(check_collision()){
-			printf("coll detected\r\n");
 			game_is_active = 0;
 
 			//stop timer to upcount scores
@@ -196,12 +188,8 @@ void process_game(){
 
 			//set flag to indicate the game over
 			curr_msg_node2.game_over = 1;
-
-
 			
 		}
-
-		
 
 		//update current score
 		curr_msg_node2.game_score = score;
@@ -213,10 +201,7 @@ void process_game(){
 		message->data[2] = (curr_msg_node2.game_score  >> 8);
 
 		can_send_message(message);
-
-		printf("node 2 sending \r\n");
 		
-
 	}
 	
 }

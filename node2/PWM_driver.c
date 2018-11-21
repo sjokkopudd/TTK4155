@@ -8,9 +8,8 @@
 #define MAX_DUTY_CYCLE 10.5
 #define PWM_TOP 5000
 #define MAX_PULSE_SERVO 525
-//(PWM_TOP*MAX_DUTY_CYCLE)/100
 #define MIN_PULSE_SERVO 225
-//(PWM_TOP*MIN_DUTY_CYCLE)/100
+
 
 
 void init_pwm(){
@@ -44,9 +43,6 @@ void init_pwm(){
 void generate_pulse_servo(int pos){
 
 	uint16_t pulse;
-
-	//printf("MIN: %d\r\n", MIN_PULSE_SERVO);
-	//printf("MAX: %d\r\n", MAX_PULSE_SERVO);
 	
 	//make sure that input is valid
 	if(pos < 0){
@@ -62,7 +58,7 @@ void generate_pulse_servo(int pos){
 		pulse = MIN_PULSE_SERVO + ((double)pos/255) * (MAX_PULSE_SERVO - MIN_PULSE_SERVO);
 		
 	}
-
+	printf("pulse: %d\r\n", pulse);
 	//make sure that output is valid 
 	if(pulse < MIN_PULSE_SERVO){
 		pulse = MIN_PULSE_SERVO;
@@ -70,9 +66,6 @@ void generate_pulse_servo(int pos){
 	else if(pulse > MAX_PULSE_SERVO){
 		pulse = MAX_PULSE_SERVO;
 	}
-
-
-	//printf("pulse: %d\n", pulse );
 	
 
 	OCR1A = pulse;

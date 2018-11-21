@@ -31,15 +31,10 @@ void uart_init(unsigned long clk){
 	set_bit(UCSR0B,RXEN0);
 	set_bit(UCSR0B,TXEN0);
 
-	
-
-
 }
 
-//.. comment needed
+
 int uart_transmit(char data, FILE * _not_used){
-
-
 
 	(void) _not_used;
 

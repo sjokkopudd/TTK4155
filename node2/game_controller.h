@@ -12,6 +12,4 @@ void init_game_controller();
 void process_game();
 
 
-
-
 #endif

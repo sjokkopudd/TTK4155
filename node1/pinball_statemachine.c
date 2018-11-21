@@ -9,13 +9,9 @@
 #include "uart_driver.h"
 #include "can_communication.h"
 #include "eeprom.h"
-
+#include "pwm_buzzer.h"
+#include "sprite_timer.h"
 #include "util/delay.h"
-
-
-/*#ifndef DEBUG
-#define DEBUG
-#endif*/
 
 
 #define NUM_PLAYERS 4
@@ -179,7 +175,6 @@ enStatePinball evt_start_application(){
 
 	//initialize the scores by fetching them from eeprom
 	fetch_scores();
-	//reset_eeprom();
 	//print menu to oled
 	oled_print_menu();
 
@@ -214,7 +209,8 @@ static uint8_t handle_responses(){
 		//check if game over is set
 		if(curr_msg_node2.game_over == 1){
 			print_game_over(score);
-			_delay_ms(3000);
+			buzzer_play_game_over();
+			_delay_ms(1000);
 
 			if(score > highScores[player]){
 				save_player_score(player, score);
@@ -225,11 +221,14 @@ static uint8_t handle_responses(){
 					currLeader = player;
 					currHighScore = score;
 					print_high_score(score);
-					_delay_ms(3000);
+					sprite_timer_init();
+										
+					buzzer_play_highscore();
+					_delay_ms(1000);
+					disable_sprite_timer();
+
 				}
 			}
-			_delay_ms(1000);
-			
 			
 			return 0;
 
@@ -262,8 +261,6 @@ enStatePinball evt_shoot(){
 // controlling servo -> sending x position of joystick
 // ----------------------------------------------------
 enStatePinball evt_control_game(){
-	//static uint8_t lstVal = 128;
-	//(lstVal-x) > 5 || (x-lstVal)>5
 	
 	//getting current x position of joystick
 	uint8_t x = joystick_get_x_pos();
@@ -296,9 +293,11 @@ enStatePinball evt_select_menu_item(){
 			oled_print_players(player);
 			oled_select_player(player);
 			return ePLAYER;
+
 		case eSET_SETTING: 
 			oled_print_reset_high_scores(reset_high_score);
 			return eSETTING;
+
 		case eSTART_GAME:
 			oled_reset_score();
 
@@ -313,16 +312,13 @@ enStatePinball evt_select_menu_item(){
 
 			//change current message to start 
 			curr_msg_node1 = msg_start;
-
-
 			oled_print_play_mode();
-
-			//oled_reset_score();
-
 			return ePLAY;
+
 		case eSEE_SCORE:
 			print_best_players();
 			return eSCORE;
+
 		case eNOLEAF:
 			return eMENU;
 	}
@@ -339,10 +335,8 @@ enStatePinball evt_navigate_up(){
 
 	//call function to highlight
 	oled_highlight_menu();
-
-
+	
 	return eMENU;
-
 }
 
 //-----------------------------------------------------
@@ -354,7 +348,7 @@ enStatePinball evt_navigate_down(){
 
 	//call function to highlight selected item in oled
 	oled_highlight_menu();
-
+	
 	return eMENU;
 }
 
@@ -366,20 +360,12 @@ enStatePinball evt_exit_leaf(void){
 	//call navigation back with parameter 1 -> 
 	//indicates that this is called from a leaf state
 	//returning to underlying menu
-	//for example: in state diff: Joystick left
-	//prints menu: Play
-	// 				 Difficulty
-	//				 Start
-	//
-	
+
 	oled_menu_navigate_back(1);
-
-
 
 	oled_highlight_menu();
 
 	return eMENU;
-
 }
 
 
@@ -465,7 +451,6 @@ void init_pinball_game(){
 	//send the postion via CAN to node 2
 	message = malloc(sizeof(data_t));
 	receive = malloc(sizeof(data_t));
-	//clear_can_buffer = malloc(sizeof(data_t));
 
 	enCurrState = eIDLE;
 	
@@ -492,8 +477,12 @@ enStateEvent get_event(){
 		lastBtn = btn_input;
 		switch(btn_input){
 			case eBTN_RIGHT:
+				if (enCurrState != ePLAY){
+					buzzer_button_press();
+				}
 				return eBUTTON_RIGHT;
 			case eBTN_LEFT:
+				buzzer_button_press();
 				return eBUTTON_LEFT;
 		}
 	}
@@ -586,18 +575,11 @@ enStatePinball evt_sel_reset(void){
 void print_high_score(uint16_t score){
 
 	oled_print_high_score(score);
+}
 
-}
-void print_animation(void* any/*any animation: enum*/){
-	
-}
 void print_best_players(void){
 
 	oled_print_best_players(highScores, NUM_PLAYERS);
-}
-
-void print_init_screen(void){
-
 }
 
 void print_game_over(uint16_t score){
@@ -606,13 +588,8 @@ void print_game_over(uint16_t score){
 
 }
 
-
-void update_play_screen(){
-	//print oled score
-
-}
-
 void fetch_scores(){
+	currHighScore = 0;
 	for (int i = 0; i < 4; i++){
 		highScores[i] = get_player_score(i);
 		if(highScores[i] > currHighScore){

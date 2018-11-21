@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 
-void oled_init(void); // PDF:“OLED LY190-128064” section 9.4
+void oled_init(void); 
 
 void oled_reset(void);
 
@@ -16,9 +16,7 @@ void oled_goto_column(uint8_t column);
 
 void oled_clear_line(uint8_t line);
 
-
 void oled_pos(uint8_t row, uint8_t column);
-
 
 void oled_print(const char* data);
 
@@ -29,5 +27,7 @@ void oled_write_screen();
 void oled_print_trophy();
 
 void oled_game_over();
+
+void oled_print_firework(int frame);
 
 #endif

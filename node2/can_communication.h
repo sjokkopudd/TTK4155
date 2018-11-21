@@ -43,6 +43,7 @@ uint8_t can_send_message(data_t* message);
 
 int can_receive_message(data_t* message_to_receive);
 
+static uint8_t can_transmission_complete();
 
 
 #endif

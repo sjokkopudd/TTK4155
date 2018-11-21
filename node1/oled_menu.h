@@ -22,8 +22,6 @@ typedef struct currMenuSelected
 }currMenuSelected_t;
 
 
-
-
 // ---------------------------------
 // common typedef for menu leafes in order to change state
 // --------------------------------

@@ -10,7 +10,6 @@
 
 void uart_init(unsigned long clk);
 
-
 int uart_transmit(char data, FILE * _not_used);
 
 int uart_receive(FILE * _not_used);

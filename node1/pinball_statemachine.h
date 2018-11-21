@@ -75,9 +75,7 @@ void pinball_game_process(void);
 // ------------------------------------------------------
 void print_high_score(uint16_t score);
 void print_game_over(uint16_t score);
-void print_animation(void* any/*any animation: enum*/);
 void print_best_players(void);
-void print_init_screen(void);
 void fetch_scores(void);
 
 

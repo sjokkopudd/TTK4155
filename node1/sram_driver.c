@@ -15,24 +15,11 @@ int sram_write(uint16_t address, uint8_t data){
 	volatile char *ext_ram = (char *) 0x1800;
 	ext_ram[address] = data;
 
-	//check if the right data has been written to sram
-	//uint8_t retrieved_value = ext_ram[address];
-
-	/*printf("Write phase: ext_ram[%4d] = %02X\r\n", address, data);
-	if (retrieved_value != data) {
-		printf("Write phase error: ext_ram[%4d] = %02X (should be %02X)\r\n", address, retrieved_value, data);
-		return EXIT_FAILURE;
-	}*/
-
 	return EXIT_SUCCESS;
 }
 
 
 char sram_read(uint16_t address){
-	/*if(address > 0x7ff){
-		printf("Error in reading from sram - too big adress!\n");
-		return EXIT_FAILURE;
-	}*/
 
 	volatile char *ext_ram = (char *) 0x1800;
 

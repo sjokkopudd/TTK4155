@@ -10,7 +10,6 @@ typedef enum dir_t
 }dir_t;
 
 
-
 void motor_init(void);
 void motor_reset();
 void motor_set_direction(dir_t dir);
